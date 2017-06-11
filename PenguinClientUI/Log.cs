@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace PenguinClientUI
@@ -18,7 +19,10 @@ namespace PenguinClientUI
 			label.Font = font;
 			label.AutoSize = true;
 			label.Text = value;
-			lines.Controls.Add(label);
+			if (lines.InvokeRequired)
+				lines.Invoke(new Action<string, Color, Color, Font>(WriteLine), value, back, fore, font);
+			else
+				lines.Controls.Add(label);
 		}
 	}
 }
