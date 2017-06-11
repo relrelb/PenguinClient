@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinClient", "PenguinClient\PenguinClient.csproj", "{125E6F73-CE30-41FC-A1DA-159E7A105D44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinClientUI", "PenguinClientUI\PenguinClientUI.csproj", "{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}"
+	ProjectSection(ProjectDependencies) = postProject
+		{125E6F73-CE30-41FC-A1DA-159E7A105D44} = {125E6F73-CE30-41FC-A1DA-159E7A105D44}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{125E6F73-CE30-41FC-A1DA-159E7A105D44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{125E6F73-CE30-41FC-A1DA-159E7A105D44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{125E6F73-CE30-41FC-A1DA-159E7A105D44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{125E6F73-CE30-41FC-A1DA-159E7A105D44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
