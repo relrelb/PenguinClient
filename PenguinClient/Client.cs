@@ -52,6 +52,11 @@ namespace PenguinClient
 
 		public Client() : this(TextWriter.Null, TextWriter.Null) { }
 
+		~Client()
+		{
+			Dispose();
+		}
+
 		#endregion
 
 		#region Methods
@@ -399,6 +404,7 @@ namespace PenguinClient
 
 		private void HandlePacket(string[] packet)
 		{
+			output.WriteLine(string.Join("%", packet));
 			string op = packet[2];
 			//TODO
 		}
