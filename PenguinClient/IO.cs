@@ -26,9 +26,18 @@ namespace PenguinClient
 			buffer = string.Empty;
 		}
 
-		public void Send(string data)
+		public bool Send(string data)
 		{
-			socket.Send(Encoding.UTF8.GetBytes(data + '\0'));
+			byte[] buffer = Encoding.UTF8.GetBytes(data + '\0');
+			try
+			{
+				socket.Send(buffer);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 
 		public string Receive()
@@ -37,7 +46,15 @@ namespace PenguinClient
 			int i = this.buffer.IndexOf('\0');
 			while (i < 0)
 			{
-				int length = socket.Receive(buffer);
+				int length;
+				try
+				{
+					length = socket.Receive(buffer);
+				}
+				catch
+				{
+					return null;
+				}
 				string received = Encoding.UTF8.GetString(buffer, 0, length);
 				i = received.IndexOf('\0');
 				if (i >= 0)

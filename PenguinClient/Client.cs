@@ -52,11 +52,6 @@ namespace PenguinClient
 
 		public Client() : this(TextWriter.Null, TextWriter.Null) { }
 
-		~Client()
-		{
-			Dispose();
-		}
-
 		#endregion
 
 		#region Methods
@@ -78,8 +73,12 @@ namespace PenguinClient
 		private bool VersionCheck(int version)
 		{
 			output.WriteLine("Sending \"verChk\" request...");
-			io.Send(string.Format("<msg t=\"sys\"><body action=\"verChk\" r=\"0\"><ver v=\"{0}\"/></body></msg>", version));
+			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"verChk\" r=\"0\"><ver v=\"{0}\"/></body></msg>", version));
+			if (!sent)
+				return false;
 			string response = io.Receive();
+			if (response == null)
+				return false;
 			if (response.Contains("apiOK"))
 				return true;
 			if (response.Contains("apiKO"))
@@ -92,8 +91,12 @@ namespace PenguinClient
 		{
 			output.WriteLine("Sending \"rndK\" request...");
 			output.WriteLine();
-			io.Send("<msg t=\"sys\"><body action=\"rndK\" r=\"-1\"></body></msg>");
+			bool sent = io.Send("<msg t=\"sys\"><body action=\"rndK\" r=\"-1\"></body></msg>");
+			if (!sent)
+				return null;
 			string response = io.Receive();
+			if (response == null)
+				return null;
 			if (response.Contains("rndK"))
 			{
 				Regex regex = new Regex(@"<k>(<!\[CDATA\[)?(.*?)(\]\]>)?<\/k>");
@@ -111,6 +114,8 @@ namespace PenguinClient
 		private string[] ReceivePacket(bool error)
 		{
 			string data = io.Receive();
+			if (data == null)
+				return null;
 			if (data[0] == '%')
 			{
 				string[] packet = data.Split('%');
@@ -348,7 +353,9 @@ namespace PenguinClient
 			if (key == null)
 				return null;
 			string hash = SwappedMD5(SwappedMD5(password).ToUpper() + key + "Y(02.>'H}t\":E1");
-			io.Send(string.Format("<msg t=\"sys\"><body action=\"login\" r=\"0\"><login z=\"w1\"><nick><![CDATA[{0}]]></nick><pword><![CDATA[{1}]]></pword></login></body></msg>", username, hash));
+			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"login\" r=\"0\"><login z=\"w1\"><nick><![CDATA[{0}]]></nick><pword><![CDATA[{1}]]></pword></login></body></msg>", username, hash));
+			if (!sent)
+				return null;
 			string[] packet;
 			do
 			{
@@ -372,7 +379,9 @@ namespace PenguinClient
 			if (key == null)
 				return false;
 			string hash = SwappedMD5(loginKey + key) + loginKey;
-			io.Send(string.Format("<msg t=\"sys\"><body action=\"login\" r=\"0\"><login z=\"w1\"><nick><![CDATA[{0}]]></nick><pword><![CDATA[{1}]]></pword></login></body></msg>", username, hash));
+			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"login\" r=\"0\"><login z=\"w1\"><nick><![CDATA[{0}]]></nick><pword><![CDATA[{1}]]></pword></login></body></msg>", username, hash));
+			if (!sent)
+				return false;
 			string[] packet;
 			do
 			{
@@ -380,7 +389,9 @@ namespace PenguinClient
 				if (packet == null)
 					return false;
 			} while (packet[2] != "l");
-			io.Send(string.Format("%xt%s%j#js%{0}%{1}%{2}%en%", internalRoomId, id, loginKey));
+			sent = io.Send(string.Format("%xt%s%j#js%{0}%{1}%{2}%en%", internalRoomId, id, loginKey));
+			if (!sent)
+				return false;
 			do
 			{
 				packet = ReceivePacket();
@@ -394,7 +405,7 @@ namespace PenguinClient
 		private void Listen()
 		{
 			output.WriteLine("Listening to packets...");
-			while (true)
+			while (Connected)
 			{
 				string[] packet = ReceivePacket();
 				if (packet != null)
@@ -424,6 +435,7 @@ namespace PenguinClient
 			output.WriteLine("Connecting to {0}:{1}...", ip, gamePort);
 			io.Dispose();
 			io = new IO(ip, gamePort);
+
 			bool joined = JoinServer(username, key, version);
 			if (!joined)
 			{
