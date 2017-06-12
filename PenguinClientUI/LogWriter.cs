@@ -6,6 +6,8 @@ namespace PenguinClientUI
 {
 	public class LogWriter : TextWriter
 	{
+		#region Fields
+
 		private Log log;
 
 		private Color back;
@@ -13,6 +15,10 @@ namespace PenguinClientUI
 		private Color fore;
 
 		private Font font;
+
+		#endregion
+
+		#region Properties
 
 		public Log Log { get { return log; } }
 
@@ -55,14 +61,24 @@ namespace PenguinClientUI
 
 		public override Encoding Encoding { get { return Encoding.Default; } }
 
+		#endregion
+
+		#region Constructors
+
 		public LogWriter(Log log)
 		{
 			this.log = log;
 		}
 
+		#endregion
+
+		#region Methods
+
 		public override void WriteLine(string value)
 		{
 			log.WriteLine(value, back, fore, font);
 		}
+
+		#endregion
 	}
 }

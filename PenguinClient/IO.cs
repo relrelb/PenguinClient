@@ -7,6 +7,8 @@ namespace PenguinClient
 {
 	internal class IO : IDisposable
 	{
+		#region Fields
+
 		private IPAddress ip;
 
 		private int port;
@@ -15,7 +17,19 @@ namespace PenguinClient
 
 		private string buffer;
 
+		#endregion
+
+		#region Properties
+
+		public IPAddress IpAddress { get { return ip; } }
+
+		public int Port { get { return port; } }
+
 		public bool Connected { get { return socket.Connected; } }
+
+		#endregion
+
+		#region Constructors
 
 		public IO(IPAddress ip, int port)
 		{
@@ -25,6 +39,10 @@ namespace PenguinClient
 			socket.Connect(ip, port);
 			buffer = string.Empty;
 		}
+
+		#endregion
+
+		#region Methods
 
 		public bool Send(string data)
 		{
@@ -70,5 +88,7 @@ namespace PenguinClient
 		{
 			socket.Close();
 		}
+
+		#endregion
 	}
 }
