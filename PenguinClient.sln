@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinClientUI", "PenguinC
 		{125E6F73-CE30-41FC-A1DA-159E7A105D44} = {125E6F73-CE30-41FC-A1DA-159E7A105D44}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlashTest", "FlashTest\FlashTest.csproj", "{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F994E22-5CFE-418A-AA33-73AE8ACAFB70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
