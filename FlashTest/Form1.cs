@@ -9,6 +9,16 @@ namespace FlashTest
 			InitializeComponent();
 			axShockwaveFlash1.LoadMovie(0, "https://play.clubpenguinrewritten.pw/media/loader.swf");
 			axShockwaveFlash1.Play();
+
+			//axShockwaveFlash1.CallFunction("<invoke name=\"test\" returntype=\"void\" /></invoke>");
+
+			/*
+			<invoke name="sendText" returntype="xml">
+			<arguments>
+			<string>some text message here</string>
+			</arguments>
+			</invoke>
+			*/
 		}
 	}
 }
