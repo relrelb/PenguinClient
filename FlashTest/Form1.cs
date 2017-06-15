@@ -19,16 +19,17 @@ namespace FlashTest
 		private void button_Click(object sender, System.EventArgs e)
 		{
 			//1841
-			Waddle(16, 400, 400);
+			Waddle(1005, 400, 400);
 		}
 
 		private void Waddle(int id, int x, int y)
 		{
-			SendPacket("s", "u#sp", new object[] { id, x, y }, int.Parse(textBox1.Text));
+			SendPacket("s", "u#sp", new object[] { id, x, y }, 16);
 		}
 
 		private void SendPacket(string extension, string command, object[] array, int internalRoomId)
 		{
+			//extension, command, arr, type, room_id
 			CallFunction("sendPacket", extension, command, array, "str", internalRoomId);
 		}
 
