@@ -27,10 +27,9 @@ namespace FlashTest
 			SendPacket("s", "u#sp", new object[] { id, x, y }, 16);
 		}
 
-		private void SendPacket(string extension, string command, object[] array, int internalRoomId)
+		private object SendPacket(string extension, string command, object[] array, int internalRoomId)
 		{
-			//extension, command, arr, type, room_id
-			CallFunction("sendPacket", extension, command, array, "str", internalRoomId);
+			return CallFunction("sendPacket", extension, command, array, "str", internalRoomId);
 		}
 
 		private object CallFunction(string name, params object[] args)
