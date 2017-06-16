@@ -24,11 +24,16 @@ namespace FlashTest
 
 		private void Waddle(int id, int x, int y)
 		{
-			SendPacket("s", "u#sp", new object[] { id, x, y }, 16);
+			object obj = SendPacket("s", "u#sp", new object[] { 16, x, y }, 16);
+			MessageBox.Show(obj.ToString());
 		}
 
 		private object SendPacket(string extension, string command, object[] array, int internalRoomId)
 		{
+			for (int i = 0; i < array.Length; i++)
+			{
+				array[i] = array[i].ToString();
+			}
 			return CallFunction("sendPacket", extension, command, array, "str", internalRoomId);
 		}
 
