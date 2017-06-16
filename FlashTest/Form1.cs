@@ -12,7 +12,7 @@ namespace FlashTest
 		public Form1()
 		{
 			InitializeComponent();
-			axShockwaveFlash.LoadMovie(0, Application.StartupPath + "\\Load.swf");
+			axShockwaveFlash.LoadMovie(0, Application.StartupPath + "\\loader.swf");
 			axShockwaveFlash.Play();
 		}
 
@@ -24,8 +24,28 @@ namespace FlashTest
 
 		private void Waddle(int id, int x, int y)
 		{
-			object obj = SendPacket("s", "u#sp", new object[] { 16, x, y }, 16);
-			MessageBox.Show(obj.ToString());
+			object obj = SendPacket("s", "u#sp", new object[] { id, x, y }, -1);
+			MessageBox.Show(GetString(obj));
+		}
+
+		private string GetString(object obj)
+		{
+			if (obj == null)
+				return "null";
+			Dictionary<string, object> dict = obj as Dictionary<string, object>;
+			if (dict == null)
+				return obj.ToString();
+			string str = "{ ";
+			bool comma = false;
+			foreach (KeyValuePair<string, object> prop in dict)
+			{
+				if (comma)
+					str += ", ";
+				str += prop.Key + ": " + GetString(prop.Value);
+				comma = true;
+			}
+			str += " }";
+			return str;
 		}
 
 		private object SendPacket(string extension, string command, object[] array, int internalRoomId)
@@ -57,6 +77,7 @@ namespace FlashTest
 			}
 			string request = builder.ToString();
 			string result = axShockwaveFlash.CallFunction(request);
+			MessageBox.Show(result);
 			using (XmlReader reader = XmlReader.Create(new StringReader(result)))
 			{
 				return ReadXmlResult(reader);
@@ -107,10 +128,13 @@ namespace FlashTest
 			{
 				case "null":
 				case "undefined":
+					reader.Read();
 					return null;
 				case "true":
+					reader.Read();
 					return true;
 				case "false":
+					reader.Read();
 					return false;
 				case "string":
 					return reader.ReadElementContentAsString();
