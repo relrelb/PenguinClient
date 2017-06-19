@@ -41,7 +41,7 @@
 			this.axShockwaveFlash.Location = new System.Drawing.Point(0, 0);
 			this.axShockwaveFlash.Name = "axShockwaveFlash";
 			this.axShockwaveFlash.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axShockwaveFlash.OcxState")));
-			this.axShockwaveFlash.Size = new System.Drawing.Size(284, 261);
+			this.axShockwaveFlash.Size = new System.Drawing.Size(970, 720);
 			this.axShockwaveFlash.TabIndex = 0;
 			this.axShockwaveFlash.FlashCall += new AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEventHandler(this.axShockwaveFlash_FlashCall);
 			// 
@@ -59,7 +59,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(284, 261);
+			this.ClientSize = new System.Drawing.Size(970, 720);
 			this.Controls.Add(this.button);
 			this.Controls.Add(this.axShockwaveFlash);
 			this.Name = "Form1";

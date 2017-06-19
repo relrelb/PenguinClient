@@ -43,10 +43,10 @@ namespace FlashTest
 			using (XmlReader reader = XmlReader.Create(new StringReader(request)))
 			{
 				reader.Read();
-				//reader.ReadStartElement("invoke");
 				string name = reader.GetAttribute("name");
 				string returnType = reader.GetAttribute("returntype");
-				reader.ReadToDescendant("arguments");
+				reader.ReadStartElement("invoke");
+				reader.ReadStartElement("arguments");
 				List<object> args = new List<object>();
 				while (reader.Name != "arguments" || reader.NodeType != XmlNodeType.EndElement)
 				{

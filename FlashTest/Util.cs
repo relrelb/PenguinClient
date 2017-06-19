@@ -2,31 +2,51 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 
 namespace FlashTest
 {
 	public static class Util
 	{
-		public static string GetString(object obj)
+		public static string GetLiteral(object obj)
 		{
 			if (obj == null)
 				return "null";
-			Dictionary<string, object> dict = obj as Dictionary<string, object>;
-			if (dict == null)
-				return obj.ToString();
-			string str = "{";
-			bool comma = false;
-			foreach (KeyValuePair<string, object> prop in dict)
+			if (obj == Undefined.Value)
+				return "undefined";
+			if (obj is bool)
+				return (bool)obj ? "true" : "false";
+			if (obj is string)
+				return "\"" + (string)obj + "\"";
+			if (obj is object[])
 			{
-				if (comma)
-					str += ", ";
-				str += prop.Key + ": " + GetString(prop.Value);
-				comma = true;
+				object[] arr = (object[])obj;
+				string str = "[";
+				for (int i = 0; i < arr.Length; i++)
+				{
+					if (i > 0)
+						str += ", ";
+					str += GetLiteral(arr[i]);
+				}
+				str += "]";
+				return str;
 			}
-			str += "}";
-			return str;
+			if (obj is Dictionary<string, object>)
+			{
+				Dictionary<string, object> dict = (Dictionary<string, object>)obj;
+				string str = "{";
+				bool comma = false;
+				foreach (KeyValuePair<string, object> prop in dict)
+				{
+					if (comma)
+						str += ", ";
+					str += prop.Key + ": " + GetLiteral(prop.Value);
+					comma = true;
+				}
+				str += "}";
+				return str;
+			}
+			return obj.ToString();
 		}
 
 		public static object SendPacket(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string extension, string command, object[] array, int internalRoomId)
@@ -41,32 +61,6 @@ namespace FlashTest
 		public static string ReceivePacket(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash)
 		{
 			throw new System.NotImplementedException();
-		}
-
-		private static object CallFunction(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string name, params object[] args)
-		{
-			StringBuilder builder = new StringBuilder();
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.OmitXmlDeclaration = true;
-			using (XmlWriter writer = XmlWriter.Create(builder, settings))
-			{
-				writer.WriteStartElement("invoke");
-				writer.WriteAttributeString("name", name);
-				writer.WriteAttributeString("returnType", "xml");
-				writer.WriteStartElement("arguments");
-				foreach (object arg in args)
-				{
-					WriteXmlValue(arg, writer);
-				}
-				writer.WriteFullEndElement();
-				writer.WriteFullEndElement();
-			}
-			string request = builder.ToString();
-			string result = axShockwaveFlash.CallFunction(request);
-			using (XmlReader reader = XmlReader.Create(new StringReader(result)))
-			{
-				return ReadXmlValue(reader);
-			}
 		}
 
 		internal static void WriteXmlValue(object value, XmlWriter writer)
@@ -108,13 +102,14 @@ namespace FlashTest
 
 		internal static object ReadXmlValue(XmlReader reader)
 		{
-			reader.Read();
 			switch (reader.Name)
 			{
 				case "null":
-				case "undefined":
 					reader.Read();
 					return null;
+				case "undefined":
+					reader.Read();
+					return Undefined.Value;
 				case "true":
 					reader.Read();
 					return true;
@@ -164,6 +159,40 @@ namespace FlashTest
 					return obj;
 			}
 			throw new InvalidDataException("Invalid XML data");
+		}
+
+		private static object CallFunction(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string name, params object[] args)
+		{
+			StringBuilder builder = new StringBuilder();
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.OmitXmlDeclaration = true;
+			using (XmlWriter writer = XmlWriter.Create(builder, settings))
+			{
+				writer.WriteStartElement("invoke");
+				writer.WriteAttributeString("name", name);
+				writer.WriteAttributeString("returnType", "xml");
+				writer.WriteStartElement("arguments");
+				foreach (object arg in args)
+				{
+					WriteXmlValue(arg, writer);
+				}
+				writer.WriteFullEndElement();
+				writer.WriteFullEndElement();
+			}
+			string request = builder.ToString();
+			string result = axShockwaveFlash.CallFunction(request);
+			using (XmlReader reader = XmlReader.Create(new StringReader(result)))
+			{
+				reader.Read();
+				return ReadXmlValue(reader);
+			}
+		}
+
+		private class Undefined
+		{
+			public static readonly Undefined Value = new Undefined();
+
+			private Undefined() { }
 		}
 	}
 }

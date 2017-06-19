@@ -18,7 +18,14 @@ namespace FlashTest
 			switch (invoke.Name)
 			{
 				case "mbox":
-					MessageBox.Show((string)invoke.Arguments[0]);
+					string message = string.Empty;
+					for (int i = 0; i < invoke.Arguments.Length; i++)
+					{
+						if (i > 0)
+							message += " ";
+						message += Util.GetLiteral(invoke.Arguments[i]);
+					}
+					MessageBox.Show(message);
 					break;
 			}
 		}
@@ -31,7 +38,7 @@ namespace FlashTest
 		private void Waddle(int id, int x, int y)
 		{
 			object obj = Util.SendPacket(axShockwaveFlash, "s", "u#sp", new object[] { id, x, y }, -1);
-			MessageBox.Show(Util.GetString(obj));
+			MessageBox.Show(Util.GetLiteral(obj));
 		}
 	}
 }

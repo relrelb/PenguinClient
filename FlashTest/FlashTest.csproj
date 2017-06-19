@@ -100,7 +100,6 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Load.swf" />
     <Content Include="loader.swf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
