@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>FlashTest</RootNamespace>
-    <AssemblyName>FlashTest</AssemblyName>
+    <RootNamespace>PenguinClientFlash</RootNamespace>
+    <AssemblyName>PenguinClientFlash</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -66,6 +66,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

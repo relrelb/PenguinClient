@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace FlashTest
+namespace PenguinClientFlash
 {
 	public partial class Form1 : Form
 	{

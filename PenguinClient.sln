@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinClient", "PenguinClient\PenguinClient.csproj", "{125E6F73-CE30-41FC-A1DA-159E7A105D44}"
 EndProject
@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinClientUI", "PenguinC
 		{125E6F73-CE30-41FC-A1DA-159E7A105D44} = {125E6F73-CE30-41FC-A1DA-159E7A105D44}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlashTest", "FlashTest\FlashTest.csproj", "{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinClientFlash", "PenguinClientFlash\PenguinClientFlash.csproj", "{8FD17B7F-1AD5-4918-BC8E-F04564F643BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

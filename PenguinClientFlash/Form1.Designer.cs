@@ -1,4 +1,4 @@
-﻿namespace FlashTest
+﻿namespace PenguinClientFlash
 {
 	partial class Form1
 	{

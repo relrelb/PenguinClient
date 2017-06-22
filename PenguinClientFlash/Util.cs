@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 
-namespace FlashTest
+namespace PenguinClientFlash
 {
 	public static class Util
 	{
