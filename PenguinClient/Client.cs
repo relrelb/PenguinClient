@@ -23,6 +23,12 @@ namespace PenguinClient
 
 		private int id;
 
+		private int coins;
+
+		private int room;
+
+		private Timer heartbeat;
+
 		private Dictionary<int, Penguin> penguins;
 
 		#endregion
@@ -35,6 +41,12 @@ namespace PenguinClient
 
 		public int InternalRoomId { get { return internalRoomId; } }
 
+		public int PenguinId { get { return id; } }
+
+		public int Coins { get { return coins; } }
+
+		public int RoomId { get { return room; } }
+
 		public bool Connected { get { return io.Connected; } }
 
 		#endregion
@@ -46,6 +58,9 @@ namespace PenguinClient
 			this.output = output;
 			this.error = error;
 			internalRoomId = -1;
+			id = -1;
+			coins = -1;
+			room = -1;
 		}
 
 		public Client(TextWriter output) : this(output, TextWriter.Null) { }
@@ -109,6 +124,17 @@ namespace PenguinClient
 			}
 			error.WriteLine("Invalid response");
 			return null;
+		}
+
+		private bool SendPacket(string extension, string opcode, params object[] args)
+		{
+			StringBuilder builder = new StringBuilder();
+			builder.AppendFormat("%xt%{0}%{1}%", extension, opcode);
+			foreach (object arg in args)
+			{
+				builder.AppendFormat("{0}%", arg);
+			}
+			return io.Send(builder.ToString());
 		}
 
 		private string[] ReceivePacket(bool error)
@@ -389,7 +415,7 @@ namespace PenguinClient
 				if (packet == null)
 					return false;
 			} while (packet[2] != "l");
-			sent = io.Send(string.Format("%xt%s%j#js%{0}%{1}%{2}%en%", internalRoomId, id, loginKey));
+			sent = SendPacket("s", "j#js", internalRoomId, id, loginKey, "en");
 			if (!sent)
 				return false;
 			do
@@ -404,6 +430,7 @@ namespace PenguinClient
 
 		private void Listen()
 		{
+			heartbeat = new Timer(Heartbeat, null, 600000, 600000);
 			output.WriteLine("Listening to packets...");
 			while (Connected)
 			{
@@ -413,11 +440,128 @@ namespace PenguinClient
 			}
 		}
 
+		private void Heartbeat(object state)
+		{
+			SendPacket("s", "u#h", internalRoomId);
+		}
+
 		private void HandlePacket(string[] packet)
 		{
 			output.WriteLine(string.Join("%", packet));
-			string op = packet[2];
-			//TODO
+			string opcode = packet[2];
+			int id;
+			Penguin penguin;
+			switch (opcode)
+			{
+				case "e":
+					break;
+				case "h":
+					break;
+				case "lp":
+					penguin = Penguin.FromPlayer(packet[4]);
+					penguins.Add(penguin.Id, penguin);
+					this.coins = int.Parse(packet[5]);
+					bool safe = packet[6] == "1";
+					//int eggTimer = int.Parse(packet[7]);
+					long loginTime = long.Parse(packet[8]);
+					int age = int.Parse(packet[9]);
+					//int bannedAge = int.Parse(packet[10]);
+					int playTime = int.Parse(packet[11]);
+					int memberLeft = packet[12].Length > 0 ? int.Parse(packet[12]) : 0;
+					int timezone = int.Parse(packet[13]);
+					//bool openedPlaycard = packet[14] == "1";
+					//int savedMapCategory = int.Parse(packet[15]);
+					//int statusField = int.Parse(packet[16]);
+					break;
+				case "ap":
+					penguin = Penguin.FromPlayer(packet[4]);
+					penguins.Add(penguin.Id, penguin);
+					break;
+				case "jr":
+					internalRoomId = int.Parse(packet[3]);
+					penguins = new Dictionary<int, Penguin>();
+					room = int.Parse(packet[4]);
+					for (int i = 5; i < packet.Length; i++)
+					{
+						penguin = Penguin.FromPlayer(packet[i]);
+						penguins.Add(penguin.Id, penguin);
+					}
+					break;
+				case "rp":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					penguins.Remove(id);
+					break;
+				case "upc":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int color = int.Parse(packet[5]);
+					penguin.Color = color;
+					break;
+				case "uph":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int head = int.Parse(packet[5]);
+					penguin.Head = head;
+					break;
+				case "upf":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int face = int.Parse(packet[5]);
+					penguin.Face = face;
+					break;
+				case "upn":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int neck = int.Parse(packet[5]);
+					penguin.Neck = neck;
+					break;
+				case "upb":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int body = int.Parse(packet[5]);
+					penguin.Body = body;
+					break;
+				case "upa":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int hand = int.Parse(packet[5]);
+					penguin.Hand = hand;
+					break;
+				case "upe":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int feet = int.Parse(packet[5]);
+					penguin.Feet = feet;
+					break;
+				case "upl":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int pin = int.Parse(packet[5]);
+					penguin.Pin = pin;
+					break;
+				case "upp":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					int background = int.Parse(packet[5]);
+					penguin.Background = background;
+					break;
+				case "sp":
+					id = int.Parse(packet[4]);
+					penguin = penguins[id];
+					penguin.X = int.Parse(packet[5]);
+					penguin.Y = int.Parse(packet[6]);
+					break;
+				case "ai":
+					id = int.Parse(packet[4]);
+					int coins = int.Parse(packet[5]);
+					int cost = this.coins - coins;
+					output.WriteLine("Added item {0} (cost {1} coins)", id, cost);
+					break;
+				default:
+					error.WriteLine("Unknown opcode: {0}", opcode);
+					break;
+			}
 		}
 
 		public bool Connect(IPAddress ip, int loginPort, int gamePort, string username, string password, int version)
@@ -443,7 +587,6 @@ namespace PenguinClient
 				return false;
 			}
 
-			penguins = new Dictionary<int, Penguin>();
 			Thread thread = new Thread(Listen);
 			thread.Start();
 			return true;
@@ -464,8 +607,155 @@ namespace PenguinClient
 			return Connect(IPAddress.Parse(ip), loginPort, gamePort, username, password);
 		}
 
+		public void GoToRoom(int id, int x, int y)
+		{
+			output.WriteLine("Going to room {0}...", id);
+			SendPacket("s", "j#jr", internalRoomId, id, x, y);
+		}
+
+		public void GoToRoom(int id)
+		{
+			GoToRoom(id, 0, 0);
+		}
+
+		public void UpdateColor(int id)
+		{
+			output.WriteLine("Changing color to {0}...", id);
+			SendPacket("s", "s#upc", internalRoomId, id);
+		}
+
+		public void UpdateHead(int id)
+		{
+			output.WriteLine("Changing head item to {0}...", id);
+			SendPacket("s", "s#uph", internalRoomId, id);
+		}
+
+		public void UpdateFace(int id)
+		{
+			output.WriteLine("Changing face item to {0}...", id);
+			SendPacket("s", "s#upf", internalRoomId, id);
+		}
+
+		public void UpdateNeck(int id)
+		{
+			output.WriteLine("Changing neck item to {0}...", id);
+			SendPacket("s", "s#upn", internalRoomId, id);
+		}
+
+		public void UpdateBody(int id)
+		{
+			output.WriteLine("Changing body item to {0}...", id);
+			SendPacket("s", "s#upb", internalRoomId, id);
+		}
+
+		public void UpdateHand(int id)
+		{
+			output.WriteLine("Changing hand item to {0}...", id);
+			SendPacket("s", "s#upa", internalRoomId, id);
+		}
+
+		public void UpdateFeet(int id)
+		{
+			output.WriteLine("Changing feet item to {0}...", id);
+			SendPacket("s", "s#upe", internalRoomId, id);
+		}
+
+		public void UpdatePin(int id)
+		{
+			output.WriteLine("Changing pin to {0}...", id);
+			SendPacket("s", "s#upl", internalRoomId, id);
+		}
+
+		public void UpdateBackground(int id)
+		{
+			output.WriteLine("Changing background to {0}...", id);
+			SendPacket("s", "s#upp", internalRoomId, id);
+		}
+
+		public void Walk(int x, int y)
+		{
+			output.WriteLine("Walking to ({0}, {1})...", x, y);
+			SendPacket("s", "u#sp", id, x, y);
+		}
+
+		private void Action(int id)
+		{
+			SendPacket("s", "u#sa", internalRoomId, id);
+		}
+
+		private void Frame(int id)
+		{
+			SendPacket("s", "u#sf", internalRoomId, id);
+		}
+
+		public void Dance()
+		{
+			output.WriteLine("Dancing...");
+			Frame(26);
+		}
+
+		public void Wave()
+		{
+			output.WriteLine("Waving...");
+			Action(25);
+		}
+
+		public void Sit(SitDirection direction)
+		{
+			output.WriteLine("Sitting...");
+			Frame((int)direction);
+		}
+
+		public void Sit()
+		{
+			Sit(SitDirection.South);
+		}
+
+		public void Snowball(int x, int y)
+		{
+			output.WriteLine("Throwing snowball to ({0}, {1})...", x, y);
+			SendPacket("s", "u#sb", internalRoomId, x, y);
+		}
+
+		public void Say(string message)
+		{
+			output.WriteLine("Saying '{0}'...", message);
+			SendPacket("s", "m#sm", internalRoomId, id, message);
+		}
+
+		public void SaySafe(int id)
+		{
+			output.WriteLine("Saying {0}...", id);
+			SendPacket("s", "u#ss", internalRoomId, id);
+		}
+
+		public void Joke(int id)
+		{
+			output.WriteLine("Saying joke {0}...", id);
+			SendPacket("s", "u#sj", this.id, id);
+		}
+
+		public void Emote(int id)
+		{
+			output.WriteLine("Saying emote {0}...", id);
+			SendPacket("s", "u#se", internalRoomId, id);
+		}
+
+		public void AddItem(int id)
+		{
+			output.WriteLine("Adding item {0}...", id);
+			SendPacket("s", "i#ai", internalRoomId, id);
+		}
+
+		public void Logout()
+		{
+			output.WriteLine("Logging out...");
+			Dispose();
+		}
+
 		public void Dispose()
 		{
+			heartbeat.Dispose();
 			io.Dispose();
 		}
 

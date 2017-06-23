@@ -38,27 +38,137 @@
 
 		public string Name { get { return name; } }
 
-		public int Color { get { return color; } }
+		public int Color
+		{
+			get
+			{
+				return color;
+			}
+			set
+			{
+				color = value;
+			}
+		}
 
-		public int Head { get { return head; } }
+		public int Head
+		{
+			get
+			{
+				return head;
+			}
+			set
+			{
+				head = value;
+			}
+		}
 
-		public int Face { get { return face; } }
+		public int Face
+		{
+			get
+			{
+				return face;
+			}
+			set
+			{
+				face = value;
+			}
+		}
 
-		public int Neck { get { return neck; } }
+		public int Neck
+		{
+			get
+			{
+				return neck;
+			}
+			set
+			{
+				neck = value;
+			}
+		}
 
-		public int Body { get { return body; } }
+		public int Body
+		{
+			get
+			{
+				return body;
+			}
+			set
+			{
+				body = value;
+			}
+		}
 
-		public int Hand { get { return hand; } }
+		public int Hand
+		{
+			get
+			{
+				return hand;
+			}
+			set
+			{
+				hand = value;
+			}
+		}
 
-		public int Feet { get { return feet; } }
+		public int Feet
+		{
+			get
+			{
+				return feet;
+			}
+			set
+			{
+				feet = value;
+			}
+		}
 
-		public int Pin { get { return pin; } }
+		public int Pin
+		{
+			get
+			{
+				return pin;
+			}
+			set
+			{
+				pin = value;
+			}
+		}
 
-		public int Background { get { return background; } }
+		public int Background
+		{
+			get
+			{
+				return background;
+			}
+			set
+			{
+				background = value;
+			}
+		}
 
-		public int X { get { return x; } }
+		public int X
+		{
+			get
+			{
+				return x;
+			}
+			set
+			{
+				x = value;
+			}
+		}
 
-		public int Y { get { return y; } }
+		public int Y
+		{
+			get
+			{
+				return y;
+			}
+			set
+			{
+				y = value;
+			}
+		}
 
 		#endregion
 

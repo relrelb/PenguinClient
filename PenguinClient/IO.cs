@@ -86,6 +86,7 @@ namespace PenguinClient
 
 		public void Dispose()
 		{
+			socket.Shutdown(SocketShutdown.Both);
 			socket.Close();
 		}
 
