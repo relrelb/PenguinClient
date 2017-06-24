@@ -49,6 +49,11 @@ namespace PenguinClientFlash
 			return obj.ToString();
 		}
 
+		public static void Init(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash)
+		{
+			CallFunction(axShockwaveFlash, "init");
+		}
+
 		public static object SendPacket(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string extension, string command, object[] array, int internalRoomId)
 		{
 			for (int i = 0; i < array.Length; i++)

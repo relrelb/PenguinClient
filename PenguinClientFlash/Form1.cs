@@ -32,13 +32,13 @@ namespace PenguinClientFlash
 
 		private void button_Click(object sender, EventArgs e)
 		{
-			Waddle(1841, 400, 400);
+			Util.Init(axShockwaveFlash);
+			Waddle(485456, 400, 400);
 		}
 
 		private void Waddle(int id, int x, int y)
 		{
-			object obj = Util.SendPacket(axShockwaveFlash, "s", "u#sp", new object[] { id, x, y }, -1);
-			MessageBox.Show(Util.GetLiteral(obj));
+			Util.SendPacket(axShockwaveFlash, "s", "u#sp", new object[] { id, x, y }, -1);
 		}
 	}
 }
