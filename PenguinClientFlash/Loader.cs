@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using PenguinClient;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -6,8 +8,79 @@ using System.Xml;
 
 namespace PenguinClientFlash
 {
-	public static class Util
+	public class Loader : IDisposable
 	{
+		#region Fields
+
+		private AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash;
+
+		private PacketQueue packets;
+
+		#endregion
+
+		#region Constructors
+
+		public Loader(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url)
+		{
+			this.axShockwaveFlash = axShockwaveFlash;
+			packets = new PacketQueue();
+			axShockwaveFlash.LoadMovie(0, url);
+			axShockwaveFlash.Play();
+			axShockwaveFlash.FlashCall += AxShockwaveFlash_FlashCall;
+		}
+
+		#endregion
+
+		#region Methods
+
+		private void AxShockwaveFlash_FlashCall(object sender, AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEvent e)
+		{
+			InvokeRequest invoke = InvokeRequest.Parse(e.request);
+			if (invoke.Name == "receivePacket")
+			{
+				string extension = (string)invoke.Arguments[0];
+				string command = (string)invoke.Arguments[1];
+				object[] array = (object[])invoke.Arguments[2];
+				packets.Enqueue(extension, command, array);
+			}
+		}
+
+		public void Dispose()
+		{
+			if (packets != null)
+			{
+				packets.Dispose();
+				packets = null;
+			}
+		}
+
+		#endregion
+
+		#region Interface
+
+		public void Init()
+		{
+			CallFunction("init");
+		}
+
+		public object SendPacket(string extension, string command, object[] array)
+		{
+			for (int i = 0; i < array.Length; i++)
+			{
+				array[i] = array[i].ToString();
+			}
+			return CallFunction("sendPacket", extension, command, array, "str");
+		}
+
+		public Packet ReceivePacket()
+		{
+			return packets.Dequeue();
+		}
+
+		#endregion
+
+		#region Utilities
+
 		public static string GetLiteral(object obj)
 		{
 			if (obj == null)
@@ -49,23 +122,31 @@ namespace PenguinClientFlash
 			return obj.ToString();
 		}
 
-		public static void Init(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash)
+		private object CallFunction(string name, params object[] args)
 		{
-			CallFunction(axShockwaveFlash, "init");
-		}
-
-		public static object SendPacket(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string extension, string command, object[] array, int internalRoomId)
-		{
-			for (int i = 0; i < array.Length; i++)
+			StringBuilder builder = new StringBuilder();
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.OmitXmlDeclaration = true;
+			using (XmlWriter writer = XmlWriter.Create(builder, settings))
 			{
-				array[i] = array[i].ToString();
+				writer.WriteStartElement("invoke");
+				writer.WriteAttributeString("name", name);
+				writer.WriteAttributeString("returnType", "xml");
+				writer.WriteStartElement("arguments");
+				foreach (object arg in args)
+				{
+					WriteXmlValue(arg, writer);
+				}
+				writer.WriteFullEndElement();
+				writer.WriteFullEndElement();
 			}
-			return CallFunction(axShockwaveFlash, "sendPacket", extension, command, array, "str", internalRoomId);
-		}
-
-		public static string ReceivePacket(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash)
-		{
-			throw new System.NotImplementedException();
+			string request = builder.ToString();
+			string result = axShockwaveFlash.CallFunction(request);
+			using (XmlReader reader = XmlReader.Create(new StringReader(result)))
+			{
+				reader.Read();
+				return ReadXmlValue(reader);
+			}
 		}
 
 		internal static void WriteXmlValue(object value, XmlWriter writer)
@@ -166,38 +247,13 @@ namespace PenguinClientFlash
 			throw new InvalidDataException("Invalid XML data");
 		}
 
-		private static object CallFunction(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string name, params object[] args)
-		{
-			StringBuilder builder = new StringBuilder();
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.OmitXmlDeclaration = true;
-			using (XmlWriter writer = XmlWriter.Create(builder, settings))
-			{
-				writer.WriteStartElement("invoke");
-				writer.WriteAttributeString("name", name);
-				writer.WriteAttributeString("returnType", "xml");
-				writer.WriteStartElement("arguments");
-				foreach (object arg in args)
-				{
-					WriteXmlValue(arg, writer);
-				}
-				writer.WriteFullEndElement();
-				writer.WriteFullEndElement();
-			}
-			string request = builder.ToString();
-			string result = axShockwaveFlash.CallFunction(request);
-			using (XmlReader reader = XmlReader.Create(new StringReader(result)))
-			{
-				reader.Read();
-				return ReadXmlValue(reader);
-			}
-		}
-
 		private class Undefined
 		{
 			public static readonly Undefined Value = new Undefined();
 
 			private Undefined() { }
 		}
+
+		#endregion
 	}
 }

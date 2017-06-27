@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace PenguinClientFlash
 {
-	public class InvokeRequest
+	internal class InvokeRequest
 	{
 		#region Fields
 
@@ -50,7 +50,7 @@ namespace PenguinClientFlash
 				List<object> args = new List<object>();
 				while (reader.Name != "arguments" || reader.NodeType != XmlNodeType.EndElement)
 				{
-					object arg = Util.ReadXmlValue(reader);
+					object arg = Loader.ReadXmlValue(reader);
 					args.Add(arg);
 				}
 				reader.ReadEndElement();
