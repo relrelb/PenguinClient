@@ -10,7 +10,8 @@ namespace PenguinClientFlash
 		public Form1()
 		{
 			InitializeComponent();
-			loader = new Loader(axShockwaveFlash, Application.StartupPath + "\\loader.swf");
+			loader = new Loader(axShockwaveFlash, Application.StartupPath + @"\loader.swf");
+			loader.Load();
 		}
 
 		private void axShockwaveFlash_FlashCall(object sender, AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEvent e)

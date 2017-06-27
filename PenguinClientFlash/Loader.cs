@@ -14,6 +14,8 @@ namespace PenguinClientFlash
 
 		private AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash;
 
+		private string url;
+
 		private PacketQueue packets;
 
 		#endregion
@@ -23,9 +25,8 @@ namespace PenguinClientFlash
 		public Loader(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url)
 		{
 			this.axShockwaveFlash = axShockwaveFlash;
+			this.url = url;
 			packets = new PacketQueue();
-			axShockwaveFlash.LoadMovie(0, url);
-			axShockwaveFlash.Play();
 			axShockwaveFlash.FlashCall += AxShockwaveFlash_FlashCall;
 		}
 
@@ -33,53 +34,30 @@ namespace PenguinClientFlash
 
 		#region Methods
 
-		private void AxShockwaveFlash_FlashCall(object sender, AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEvent e)
+		public void Load()
 		{
-			InvokeRequest invoke = InvokeRequest.Parse(e.request);
-			if (invoke.Name == "receivePacket")
-			{
-				string extension = (string)invoke.Arguments[0];
-				string command = (string)invoke.Arguments[1];
-				object[] array = (object[])invoke.Arguments[2];
-				packets.Enqueue(extension, command, array);
-			}
+			axShockwaveFlash.LoadMovie(0, url);
+			axShockwaveFlash.Play();
 		}
-
-		public void Dispose()
-		{
-			if (packets != null)
-			{
-				packets.Dispose();
-				packets = null;
-			}
-		}
-
-		#endregion
-
-		#region Interface
 
 		public void Init()
 		{
 			CallFunction("init");
 		}
 
-		public object SendPacket(string extension, string command, object[] array)
+		public void SendPacket(string extension, string command, object[] array)
 		{
 			for (int i = 0; i < array.Length; i++)
 			{
 				array[i] = array[i].ToString();
 			}
-			return CallFunction("sendPacket", extension, command, array, "str");
+			CallFunction("sendPacket", extension, command, array, "str");
 		}
 
 		public Packet ReceivePacket()
 		{
 			return packets.Dequeue();
 		}
-
-		#endregion
-
-		#region Utilities
 
 		public static string GetLiteral(object obj)
 		{
@@ -146,6 +124,18 @@ namespace PenguinClientFlash
 			{
 				reader.Read();
 				return ReadXmlValue(reader);
+			}
+		}
+
+		private void AxShockwaveFlash_FlashCall(object sender, AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEvent e)
+		{
+			InvokeRequest invoke = InvokeRequest.Parse(e.request);
+			if (invoke.Name == "receivePacket")
+			{
+				string extension = (string)invoke.Arguments[0];
+				string command = (string)invoke.Arguments[1];
+				object[] array = (object[])invoke.Arguments[2];
+				packets.Enqueue(extension, command, array);
 			}
 		}
 
@@ -245,6 +235,15 @@ namespace PenguinClientFlash
 					return obj;
 			}
 			throw new InvalidDataException("Invalid XML data");
+		}
+
+		public void Dispose()
+		{
+			if (packets != null)
+			{
+				packets.Dispose();
+				packets = null;
+			}
 		}
 
 		private class Undefined
