@@ -45,13 +45,14 @@ namespace PenguinClientFlash
 			CallFunction("init");
 		}
 
+		public void SendPacket(Packet packet)
+		{
+			CallFunction("sendPacket", packet.Extension, packet.Command, packet.Array, "str");
+		}
+
 		public void SendPacket(string extension, string command, object[] array)
 		{
-			for (int i = 0; i < array.Length; i++)
-			{
-				array[i] = array[i].ToString();
-			}
-			CallFunction("sendPacket", extension, command, array, "str");
+			SendPacket(new Packet(extension, command, array));
 		}
 
 		public Packet ReceivePacket()
