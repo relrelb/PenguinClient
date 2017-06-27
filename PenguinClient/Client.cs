@@ -756,8 +756,16 @@ namespace PenguinClient
 
 		public void Dispose()
 		{
-			heartbeat.Dispose();
-			io.Dispose();
+			if (heartbeat != null)
+			{
+				heartbeat.Dispose();
+				heartbeat = null;
+			}
+			if (io != null)
+			{
+				io.Dispose();
+				io = null;
+			}
 		}
 
 		#endregion

@@ -22,7 +22,11 @@ namespace PenguinClientUI
 		protected override void OnClosed(EventArgs e)
 		{
 			base.OnClosed(e);
-			client.Dispose();
+			if (client != null)
+			{
+				client.Dispose();
+				client = null;
+			}
 		}
 	}
 }
