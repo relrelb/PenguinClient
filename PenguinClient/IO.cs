@@ -25,7 +25,15 @@ namespace PenguinClient
 
 		public int Port { get { return port; } }
 
-		public bool Connected { get { return socket.Connected; } }
+		public bool Connected
+		{
+			get
+			{
+				if (socket == null)
+					return false;
+				return socket.Connected;
+			}
+		}
 
 		#endregion
 

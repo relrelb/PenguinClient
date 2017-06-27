@@ -47,7 +47,15 @@ namespace PenguinClient
 
 		public int RoomId { get { return room; } }
 
-		public bool Connected { get { return io.Connected; } }
+		public bool Connected
+		{
+			get
+			{
+				if (io == null)
+					return false;
+				return io.Connected;
+			}
+		}
 
 		#endregion
 
