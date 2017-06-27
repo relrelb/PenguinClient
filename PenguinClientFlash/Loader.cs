@@ -20,6 +20,20 @@ namespace PenguinClientFlash
 
 		#endregion
 
+		#region Events
+
+		public event EventHandler<InvokeRequestEventArgs> InvokeRequest;
+
+		#endregion
+
+		#region Properties
+
+		public AxShockwaveFlashObjects.AxShockwaveFlash AxShockwaveFlash { get { return axShockwaveFlash; } }
+
+		public string Url { get { return url; } }
+
+		#endregion
+
 		#region Constructors
 
 		public Loader(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url)
@@ -130,13 +144,19 @@ namespace PenguinClientFlash
 
 		private void AxShockwaveFlash_FlashCall(object sender, AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEvent e)
 		{
-			InvokeRequest invoke = InvokeRequest.Parse(e.request);
-			if (invoke.Name == "receivePacket")
+			InvokeRequestEventArgs request = InvokeRequestEventArgs.Parse(e.request);
+			switch (request.Name)
 			{
-				string extension = (string)invoke.Arguments[0];
-				string command = (string)invoke.Arguments[1];
-				object[] array = (object[])invoke.Arguments[2];
-				packets.Enqueue(extension, command, array);
+				case "receivePacket":
+					string extension = (string)request.Arguments[0];
+					string command = (string)request.Arguments[1];
+					object[] array = (object[])request.Arguments[2];
+					packets.Enqueue(extension, command, array);
+					break;
+				default:
+					if (InvokeRequest != null)
+						InvokeRequest(this, request);
+					break;
 			}
 		}
 

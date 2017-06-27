@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Xml;
 
 namespace PenguinClientFlash
 {
-	internal class InvokeRequest
+	public class InvokeRequestEventArgs : EventArgs
 	{
 		#region Fields
 
@@ -26,19 +27,19 @@ namespace PenguinClientFlash
 
 		#region Constructors
 
-		public InvokeRequest(string name, IEnumerable args)
+		public InvokeRequestEventArgs(string name, IEnumerable args)
 		{
 			this.name = name;
 			this.args = args.Cast<object>().ToArray();
 		}
 
-		public InvokeRequest(string name) : this(name, new object[0]) { }
+		public InvokeRequestEventArgs(string name) : this(name, new object[0]) { }
 
 		#endregion
 
 		#region Methods
 
-		public static InvokeRequest Parse(string request)
+		public static InvokeRequestEventArgs Parse(string request)
 		{
 			using (XmlReader reader = XmlReader.Create(new StringReader(request)))
 			{
@@ -55,7 +56,7 @@ namespace PenguinClientFlash
 				}
 				reader.ReadEndElement();
 				reader.ReadEndElement();
-				return new InvokeRequest(name, args);
+				return new InvokeRequestEventArgs(name, args);
 			}
 		}
 

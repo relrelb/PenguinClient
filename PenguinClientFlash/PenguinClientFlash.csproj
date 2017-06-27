@@ -51,7 +51,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="InvokeRequest.cs" />
+    <Compile Include="InvokeRequestEventArgs.cs" />
     <Compile Include="PacketQueue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

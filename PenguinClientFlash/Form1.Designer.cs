@@ -43,7 +43,6 @@
 			this.axShockwaveFlash.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axShockwaveFlash.OcxState")));
 			this.axShockwaveFlash.Size = new System.Drawing.Size(970, 720);
 			this.axShockwaveFlash.TabIndex = 0;
-			this.axShockwaveFlash.FlashCall += new AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEventHandler(this.axShockwaveFlash_FlashCall);
 			// 
 			// button
 			// 

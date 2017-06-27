@@ -11,21 +11,21 @@ namespace PenguinClientFlash
 		{
 			InitializeComponent();
 			loader = new Loader(axShockwaveFlash, Application.StartupPath + @"\loader.swf");
+			loader.InvokeRequest += Loader_InvokeRequest;
 			loader.Load();
 		}
 
-		private void axShockwaveFlash_FlashCall(object sender, AxShockwaveFlashObjects._IShockwaveFlashEvents_FlashCallEvent e)
+		private void Loader_InvokeRequest(object sender, InvokeRequestEventArgs e)
 		{
-			InvokeRequest invoke = InvokeRequest.Parse(e.request);
-			switch (invoke.Name)
+			switch (e.Name)
 			{
 				case "mbox":
 					string message = string.Empty;
-					for (int i = 0; i < invoke.Arguments.Length; i++)
+					for (int i = 0; i < e.Arguments.Length; i++)
 					{
 						if (i > 0)
 							message += " ";
-						message += Loader.GetLiteral(invoke.Arguments[i]);
+						message += Loader.GetLiteral(e.Arguments[i]);
 					}
 					MessageBox.Show(message);
 					break;
