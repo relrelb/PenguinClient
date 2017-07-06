@@ -627,6 +627,12 @@ namespace PenguinClient
 			GoToRoom(id, 0, 0);
 		}
 
+		public void GoToIgloo(int id)
+		{
+			output.WriteLine("Going to {0}'s igloo...", id);
+			SendPacket("s", "j#jp", this.id, id + 1000);
+		}
+
 		public void UpdateColor(int id)
 		{
 			output.WriteLine("Changing color to {0}...", id);
@@ -754,6 +760,15 @@ namespace PenguinClient
 		{
 			output.WriteLine("Adding item {0}...", id);
 			SendPacket("s", "i#ai", internalRoomId, id);
+		}
+
+		public void AddCoins(int coins)
+		{
+			output.WriteLine("Adding {0} coins", coins);
+			int room = this.room;
+			GoToRoom(912);
+			SendPacket("z", "zo", coins);
+			GoToRoom(room);
 		}
 
 		public void Logout()

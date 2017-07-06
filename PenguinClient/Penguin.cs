@@ -196,6 +196,7 @@
 			string[] parts = player.Split('|');
 			int id = int.Parse(parts[0]);
 			string name = parts[1];
+			// ??? = int.Parse(parts[2]);
 			int color = int.Parse(parts[3]);
 			int head = int.Parse(parts[4]);
 			int face = int.Parse(parts[5]);
