@@ -152,14 +152,14 @@ namespace PenguinClient
 			Packet packet;
 			try
 			{
-				packet = Packet.Parse(data);
+				packet = Packet.Parse(data, false);
 			}
 			catch (Exception e)
 			{
 				this.error.WriteLine(e.Message);
 				return null;
 			}
-			if (error && packet.Extension == "e")
+			if (error && packet.Command == "e")
 			{
 				HandleError(packet);
 				return null;

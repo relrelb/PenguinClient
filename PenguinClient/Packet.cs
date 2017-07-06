@@ -39,18 +39,29 @@ namespace PenguinClient
 			}
 		}
 
+		public Packet(string command, params object[] array) : this(null, command, array) { }
+
 		#endregion
 
 		#region Methods
 
-		public static Packet Parse(string data)
+		public static Packet Parse(string data, bool extension)
 		{
 			if (data[0] == '%')
 			{
 				string[] packet = data.Split('%');
-				object[] array = new object[packet.Length - 4];
-				System.Array.Copy(packet, 3, array, 0, array.Length);
-				return new Packet(packet[1], packet[2], array);
+				if (extension)
+				{
+					object[] array = new object[packet.Length - 5];
+					System.Array.Copy(packet, 4, array, 0, array.Length);
+					return new Packet(packet[2], packet[3], array);
+				}
+				else
+				{
+					object[] array = new object[packet.Length - 4];
+					System.Array.Copy(packet, 3, array, 0, array.Length);
+					return new Packet(packet[2], array);
+				}
 			}
 			throw new FormatException("Invalid packet");
 		}
