@@ -35,9 +35,29 @@ namespace PenguinClient
 
 		#region Properties
 
-		public TextWriter Output { get { return output; } }
+		public TextWriter Output
+		{
+			get
+			{
+				return output;
+			}
+			set
+			{
+				output = value;
+			}
+		}
 
-		public TextWriter Error { get { return error; } }
+		public TextWriter Error
+		{
+			get
+			{
+				return error;
+			}
+			set
+			{
+				error = value;
+			}
+		}
 
 		public int InternalRoomId { get { return internalRoomId; } }
 
@@ -56,6 +76,12 @@ namespace PenguinClient
 				return io.Connected;
 			}
 		}
+
+		#endregion
+
+		#region Events
+
+		public event EventHandler<PacketEventArgs> Packet;
 
 		#endregion
 
@@ -152,11 +178,11 @@ namespace PenguinClient
 			Packet packet;
 			try
 			{
-				packet = Packet.Parse(data, false);
+				packet = PenguinClient.Packet.Parse(data, false);
 			}
 			catch (Exception e)
 			{
-				this.error.WriteLine(e.Message);
+				this.error.WriteLine("Error: {0}", e.Message);
 				return null;
 			}
 			if (error && packet.Command == "e")
@@ -174,12 +200,12 @@ namespace PenguinClient
 
 		private void HandleError(Packet packet)
 		{
-			string code = (string)packet.Array[1];
+			string code = packet.Array[1];
 			string message = GetErrorMessage(code);
 			if (message == null)
-				error.WriteLine("Error {0}", code);
+				error.WriteLine("Error #{0}", code);
 			else
-				error.WriteLine("Error {0}: {1}", code, message);
+				error.WriteLine("Error #{0}: {1}", code, message);
 		}
 
 		private string GetErrorMessage(string code)
@@ -400,8 +426,8 @@ namespace PenguinClient
 				if (packet == null)
 					return null;
 			} while (packet.Command != "l");
-			id = int.Parse((string)packet.Array[1]);
-			key = (string)packet.Array[2];
+			id = int.Parse(packet.Array[1]);
+			key = packet.Array[2];
 			output.WriteLine("Logged in.");
 			return key;
 		}
@@ -441,135 +467,138 @@ namespace PenguinClient
 
 		private void Listen()
 		{
-			heartbeat = new Timer(Heartbeat, null, 600000, 600000);
+			heartbeat = new Timer(state =>
+			{
+				SendPacket("s", "u#h", internalRoomId);
+			}, null, 600000, 600000);
+			OnPacket("h", packet => { });
+			OnPacket("lp", packet =>
+			{
+				Penguin penguin = Penguin.FromPlayer(packet.Array[1]);
+				coins = int.Parse(packet.Array[2]);
+				bool safe = packet.Array[3] == "1";
+				//int eggTimer = int.Parse(packet.Array[4]);
+				long loginTime = long.Parse(packet.Array[5]);
+				int age = int.Parse(packet.Array[6]);
+				//int bannedAge = int.Parse(packet.Array[7]);
+				int playTime = int.Parse(packet.Array[8]);
+				int memberLeft = packet.Array[9].Length > 0 ? int.Parse(packet.Array[9]) : 0;
+				int timezone = int.Parse(packet.Array[10]);
+				//bool openedPlaycard = packet.Array[11] == "1";
+				//int savedMapCategory = int.Parse(packet.Array[12]);
+				//int statusField = int.Parse(packet.Array[13]);
+			}, false);
+			OnPacket("ap", packet =>
+			{
+				Penguin penguin = Penguin.FromPlayer(packet.Array[1]);
+				penguins[penguin.Id] = penguin;
+			}, false);
+			OnPacket("jr", packet =>
+			{
+				internalRoomId = int.Parse(packet.Array[0]);
+				penguins = new Dictionary<int, Penguin>();
+				room = int.Parse(packet.Array[1]);
+				for (int i = 2; i < packet.Array.Length; i++)
+				{
+					Penguin penguin = Penguin.FromPlayer(packet.Array[i]);
+					penguins.Add(penguin.Id, penguin);
+				}
+			}, false);
+			OnPacket("rp", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				penguins.Remove(id);
+			}, false);
+			OnPacket("upc", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int color = int.Parse(packet.Array[2]);
+				penguin.Color = color;
+			}, false);
+			OnPacket("uph", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int head = int.Parse(packet.Array[2]);
+				penguin.Head = head;
+			}, false);
+			OnPacket("upf", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int face = int.Parse(packet.Array[2]);
+				penguin.Face = face;
+			}, false);
+			OnPacket("upn", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int neck = int.Parse(packet.Array[2]);
+				penguin.Neck = neck;
+			}, false);
+			OnPacket("upb", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int body = int.Parse(packet.Array[2]);
+				penguin.Body = body;
+			}, false);
+			OnPacket("upa", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int hand = int.Parse(packet.Array[2]);
+				penguin.Hand = hand;
+			}, false);
+			OnPacket("upe", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int feet = int.Parse(packet.Array[2]);
+				penguin.Feet = feet;
+			}, false);
+			OnPacket("upl", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int pin = int.Parse(packet.Array[2]);
+				penguin.Pin = pin;
+			}, false);
+			OnPacket("upp", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				int background = int.Parse(packet.Array[2]);
+				penguin.Background = background;
+			}, false);
+			OnPacket("sp", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				Penguin penguin = penguins[id];
+				penguin.X = int.Parse(packet.Array[2]);
+				penguin.Y = int.Parse(packet.Array[3]);
+			}, false);
+			OnPacket("ai", packet =>
+			{
+				int id = int.Parse(packet.Array[1]);
+				int coins = int.Parse(packet.Array[2]);
+				int cost = this.coins - coins;
+				output.WriteLine("Added item {0} (cost {1} coins)", id, cost);
+			}, false);
 			output.WriteLine("Listening to packets...");
 			while (Connected)
 			{
 				Packet packet = ReceivePacket();
 				if (packet != null)
-					HandlePacket(packet);
-			}
-		}
-
-		private void Heartbeat(object state)
-		{
-			SendPacket("s", "u#h", internalRoomId);
-		}
-
-		private void HandlePacket(Packet packet)
-		{
-			output.WriteLine(string.Join("%", packet));
-			int id;
-			Penguin penguin;
-			switch (packet.Command)
-			{
-				case "e":
-					break;
-				case "h":
-					break;
-				case "lp":
-					penguin = Penguin.FromPlayer(packet.Array[1]);
-					this.coins = int.Parse(packet.Array[2]);
-					bool safe = packet.Array[3] == "1";
-					//int eggTimer = int.Parse(packet.Array[4]);
-					long loginTime = long.Parse(packet.Array[5]);
-					int age = int.Parse(packet.Array[6]);
-					//int bannedAge = int.Parse(packet.Array[7]);
-					int playTime = int.Parse(packet.Array[8]);
-					int memberLeft = packet.Array[9].Length > 0 ? int.Parse(packet.Array[9]) : 0;
-					int timezone = int.Parse(packet.Array[10]);
-					//bool openedPlaycard = packet.Array[11] == "1";
-					//int savedMapCategory = int.Parse(packet.Array[12]);
-					//int statusField = int.Parse(packet.Array[13]);
-					break;
-				case "ap":
-					penguin = Penguin.FromPlayer(packet.Array[1]);
-					penguins[penguin.Id] = penguin;
-					break;
-				case "jr":
-					internalRoomId = int.Parse(packet.Array[0]);
-					penguins = new Dictionary<int, Penguin>();
-					room = int.Parse(packet.Array[1]);
-					for (int i = 2; i < packet.Array.Length; i++)
-					{
-						penguin = Penguin.FromPlayer(packet.Array[i]);
-						penguins.Add(penguin.Id, penguin);
-					}
-					break;
-				case "rp":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					penguins.Remove(id);
-					break;
-				case "upc":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int color = int.Parse(packet.Array[2]);
-					penguin.Color = color;
-					break;
-				case "uph":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int head = int.Parse(packet.Array[2]);
-					penguin.Head = head;
-					break;
-				case "upf":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int face = int.Parse(packet.Array[2]);
-					penguin.Face = face;
-					break;
-				case "upn":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int neck = int.Parse(packet.Array[2]);
-					penguin.Neck = neck;
-					break;
-				case "upb":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int body = int.Parse(packet.Array[2]);
-					penguin.Body = body;
-					break;
-				case "upa":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int hand = int.Parse(packet.Array[2]);
-					penguin.Hand = hand;
-					break;
-				case "upe":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int feet = int.Parse(packet.Array[2]);
-					penguin.Feet = feet;
-					break;
-				case "upl":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int pin = int.Parse(packet.Array[2]);
-					penguin.Pin = pin;
-					break;
-				case "upp":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					int background = int.Parse(packet.Array[2]);
-					penguin.Background = background;
-					break;
-				case "sp":
-					id = int.Parse(packet.Array[1]);
-					penguin = penguins[id];
-					penguin.X = int.Parse(packet.Array[2]);
-					penguin.Y = int.Parse(packet.Array[3]);
-					break;
-				case "ai":
-					id = int.Parse(packet.Array[1]);
-					int coins = int.Parse(packet.Array[2]);
-					int cost = this.coins - coins;
-					output.WriteLine("Added item {0} (cost {1} coins)", id, cost);
-					break;
-				default:
-					error.WriteLine("Unknown opcode: {0}", packet.Command);
-					break;
+				{
+					output.WriteLine(packet);
+					if (Packet == null)
+						error.WriteLine("Unhadled packet");
+					else
+						Packet(this, new PacketEventArgs(packet));
+				}
 			}
 		}
 
@@ -616,21 +645,61 @@ namespace PenguinClient
 			return Connect(IPAddress.Parse(ip), loginPort, gamePort, username, password);
 		}
 
-		public void GoToRoom(int id, int x, int y)
+		public void OnPacket(string command, Action<Packet> action, bool once)
 		{
-			output.WriteLine("Going to room {0}...", id);
+			EventHandler<PacketEventArgs> handler = null;
+			handler = (sender, e) =>
+			{
+				if (e.Packet.Command == command)
+				{
+					action(e.Packet);
+					if (once)
+						Packet -= handler;
+				}
+			};
+			Packet += handler;
+		}
+
+		public void OnPacket(string command, Action<Packet> action)
+		{
+			OnPacket(command, action, true);
+		}
+
+		public Packet WaitForPacket(string command)
+		{
+			Packet packet = null;
+			AutoResetEvent handle = new AutoResetEvent(false);
+			OnPacket(command, p =>
+			{
+				packet = p;
+				handle.Set();
+			});
+			handle.WaitOne();
+			handle.Dispose();
+			handle = null;
+			return packet;
+		}
+
+		public void JoinRoom(int id, int x, int y)
+		{
+			output.WriteLine("Joining room {0}...", id);
 			SendPacket("s", "j#jr", internalRoomId, id, x, y);
 		}
 
-		public void GoToRoom(int id)
+		public void JoinRoom(int id)
 		{
-			GoToRoom(id, 0, 0);
+			JoinRoom(id, 0, 0);
 		}
 
-		public void GoToIgloo(int id)
+		public void JoinIgloo(int id)
 		{
-			output.WriteLine("Going to {0}'s igloo...", id);
+			output.WriteLine("Joining {0}'s igloo...", id);
 			SendPacket("s", "j#jp", this.id, id + 1000);
+		}
+
+		public void JoinIgloo()
+		{
+			JoinIgloo(id);
 		}
 
 		public void UpdateColor(int id)
@@ -766,9 +835,9 @@ namespace PenguinClient
 		{
 			output.WriteLine("Adding {0} coins", coins);
 			int room = this.room;
-			GoToRoom(912);
+			JoinRoom(912);
 			SendPacket("z", "zo", coins);
-			GoToRoom(room);
+			JoinRoom(room);
 		}
 
 		public void Logout()

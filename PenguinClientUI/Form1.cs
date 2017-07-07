@@ -16,6 +16,11 @@ namespace PenguinClientUI
 			LogWriter error = new LogWriter(log);
 			error.ForeColor = Color.Red;
 			client = new Client(output, error);
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
 			bool connected = client.Connect("158.69.214.194", 6112, 6115, "nagitest", "test");
 		}
 

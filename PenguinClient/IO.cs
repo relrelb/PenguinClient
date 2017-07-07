@@ -9,9 +9,9 @@ namespace PenguinClient
 	{
 		#region Fields
 
-		private IPAddress ip;
+		private readonly IPAddress ip;
 
-		private int port;
+		private readonly int port;
 
 		private Socket socket;
 

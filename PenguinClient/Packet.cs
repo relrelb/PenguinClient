@@ -7,11 +7,11 @@ namespace PenguinClient
 	{
 		#region Fields
 
-		private string extension;
+		private readonly string extension;
 
-		private string command;
+		private readonly string command;
 
-		private string[] array;
+		private readonly string[] array;
 
 		#endregion
 

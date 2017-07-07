@@ -4,9 +4,9 @@
 	{
 		#region Fields
 
-		private int id;
+		private readonly int id;
 
-		private string name;
+		private readonly string name;
 
 		private int color;
 
