@@ -542,7 +542,8 @@ namespace PenguinClient
 				for (int i = 2; i < packet.Array.Length; i++)
 				{
 					Penguin penguin = Penguin.FromPlayer(packet.Array[i]);
-					penguins.Add(penguin.Id, penguin);
+					if (!penguins.ContainsKey(penguin.Id))
+						penguins.Add(penguin.Id, penguin);
 				}
 			}, false);
 			OnPacket("rp", packet =>

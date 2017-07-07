@@ -30,18 +30,20 @@
 		{
 			this.log = new PenguinClientUI.Log();
 			this.logs = new System.Windows.Forms.FlowLayoutPanel();
+			this.logLabel = new System.Windows.Forms.Label();
 			this.info = new System.Windows.Forms.CheckBox();
 			this.error = new System.Windows.Forms.CheckBox();
 			this.send = new System.Windows.Forms.CheckBox();
 			this.receive = new System.Windows.Forms.CheckBox();
 			this.clear = new System.Windows.Forms.Button();
-			this.logLabel = new System.Windows.Forms.Label();
 			this.logs.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// log
 			// 
-			this.log.Dock = System.Windows.Forms.DockStyle.Top;
+			this.log.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.log.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.log.Location = new System.Drawing.Point(0, 0);
 			this.log.Name = "log";
@@ -61,6 +63,15 @@
 			this.logs.Name = "logs";
 			this.logs.Size = new System.Drawing.Size(784, 29);
 			this.logs.TabIndex = 1;
+			// 
+			// logLabel
+			// 
+			this.logLabel.AutoSize = true;
+			this.logLabel.Location = new System.Drawing.Point(3, 0);
+			this.logLabel.Name = "logLabel";
+			this.logLabel.Size = new System.Drawing.Size(28, 13);
+			this.logLabel.TabIndex = 4;
+			this.logLabel.Text = "Log:";
 			// 
 			// info
 			// 
@@ -126,15 +137,6 @@
 			this.clear.Text = "Clear";
 			this.clear.UseVisualStyleBackColor = true;
 			this.clear.Click += new System.EventHandler(this.clear_Click);
-			// 
-			// logLabel
-			// 
-			this.logLabel.AutoSize = true;
-			this.logLabel.Location = new System.Drawing.Point(3, 0);
-			this.logLabel.Name = "logLabel";
-			this.logLabel.Size = new System.Drawing.Size(28, 13);
-			this.logLabel.TabIndex = 4;
-			this.logLabel.Text = "Log:";
 			// 
 			// Form1
 			// 

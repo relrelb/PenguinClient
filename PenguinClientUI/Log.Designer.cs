@@ -40,6 +40,7 @@
 			this.lines.Name = "lines";
 			this.lines.Size = new System.Drawing.Size(150, 150);
 			this.lines.TabIndex = 0;
+			this.lines.WrapContents = false;
 			// 
 			// Log
 			// 
