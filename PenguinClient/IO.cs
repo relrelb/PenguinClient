@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -16,6 +17,10 @@ namespace PenguinClient
 		private Socket socket;
 
 		private string buffer;
+
+		private TextWriter output;
+
+		private TextWriter input;
 
 		#endregion
 
@@ -35,18 +40,46 @@ namespace PenguinClient
 			}
 		}
 
+		public TextWriter Output
+		{
+			get
+			{
+				return output;
+			}
+			set
+			{
+				output = value;
+			}
+		}
+
+		public TextWriter Input
+		{
+			get
+			{
+				return input;
+			}
+			set
+			{
+				input = value;
+			}
+		}
+
 		#endregion
 
 		#region Constructors
 
-		public IO(IPAddress ip, int port)
+		public IO(IPAddress ip, int port, TextWriter output, TextWriter input)
 		{
 			this.ip = ip;
 			this.port = port;
+			this.output = output;
+			this.input = input;
 			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			socket.Connect(ip, port);
 			buffer = string.Empty;
 		}
+
+		public IO(IPAddress ip, int port) : this(ip, port, TextWriter.Null, TextWriter.Null) { }
 
 		#endregion
 
@@ -54,6 +87,7 @@ namespace PenguinClient
 
 		public bool Send(string data)
 		{
+			output.WriteLine(data);
 			byte[] buffer = Encoding.UTF8.GetBytes(data + '\0');
 			try
 			{
@@ -87,9 +121,10 @@ namespace PenguinClient
 					i += this.buffer.Length;
 				this.buffer += received;
 			}
-			string message = this.buffer.Substring(0, i + 1);
+			string data = this.buffer.Substring(0, i + 1);
 			this.buffer = this.buffer.Substring(i + 1);
-			return message;
+			input.WriteLine(data);
+			return data;
 		}
 
 		public void Dispose()

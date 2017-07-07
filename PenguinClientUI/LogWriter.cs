@@ -8,7 +8,9 @@ namespace PenguinClientUI
 	{
 		#region Fields
 
-		private Log log;
+		private readonly Log log;
+
+		private bool enabled;
 
 		private Color back;
 
@@ -21,6 +23,18 @@ namespace PenguinClientUI
 		#region Properties
 
 		public Log Log { get { return log; } }
+
+		public bool Enabled
+		{
+			get
+			{
+				return enabled;
+			}
+			set
+			{
+				enabled = value;
+			}
+		}
 
 		public Color BackColor
 		{
@@ -65,10 +79,13 @@ namespace PenguinClientUI
 
 		#region Constructors
 
-		public LogWriter(Log log)
+		public LogWriter(Log log, bool enabled)
 		{
 			this.log = log;
+			this.enabled = enabled;
 		}
+
+		public LogWriter(Log log) : this(log, true) { }
 
 		#endregion
 
@@ -76,7 +93,8 @@ namespace PenguinClientUI
 
 		public override void WriteLine(string value)
 		{
-			log.WriteLine(value, back, fore, font);
+			if (enabled)
+				log.WriteLine(value, back, fore, font);
 		}
 
 		#endregion

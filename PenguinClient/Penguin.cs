@@ -191,7 +191,7 @@
 			this.y = y;
 		}
 
-		public static Penguin FromPlayer(string player)
+		internal static Penguin FromPlayer(string player)
 		{
 			string[] parts = player.Split('|');
 			int id = int.Parse(parts[0]);

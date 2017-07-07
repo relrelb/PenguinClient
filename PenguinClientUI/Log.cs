@@ -24,5 +24,10 @@ namespace PenguinClientUI
 			else
 				lines.Controls.Add(label);
 		}
+
+		public void Clear()
+		{
+			lines.Controls.Clear();
+		}
 	}
 }

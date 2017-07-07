@@ -13,10 +13,6 @@ namespace PenguinClient
 	{
 		#region Fields
 
-		private TextWriter output;
-
-		private TextWriter error;
-
 		private IO io;
 
 		private int internalRoomId;
@@ -31,33 +27,23 @@ namespace PenguinClient
 
 		private Dictionary<int, Penguin> penguins;
 
+		private TextWriter info;
+
+		private TextWriter error;
+
+		private TextWriter output;
+
+		private TextWriter input;
+
+		#endregion
+
+		#region Events
+
+		public event EventHandler<PacketEventArgs> Packet;
+
 		#endregion
 
 		#region Properties
-
-		public TextWriter Output
-		{
-			get
-			{
-				return output;
-			}
-			set
-			{
-				output = value;
-			}
-		}
-
-		public TextWriter Error
-		{
-			get
-			{
-				return error;
-			}
-			set
-			{
-				error = value;
-			}
-		}
 
 		public int InternalRoomId { get { return internalRoomId; } }
 
@@ -77,33 +63,83 @@ namespace PenguinClient
 			}
 		}
 
-		#endregion
+		public TextWriter Info
+		{
+			get
+			{
+				return info;
+			}
+			set
+			{
+				info = value;
+			}
+		}
 
-		#region Events
+		public TextWriter Error
+		{
+			get
+			{
+				return error;
+			}
+			set
+			{
+				error = value;
+			}
+		}
 
-		public event EventHandler<PacketEventArgs> Packet;
+		public TextWriter Output
+		{
+			get
+			{
+				return output;
+			}
+			set
+			{
+				output = value;
+				if (io != null)
+					io.Output = value;
+			}
+		}
+
+		public TextWriter Input
+		{
+			get
+			{
+				return input;
+			}
+			set
+			{
+				input = value;
+				if (io != null)
+					io.Input = value;
+			}
+		}
 
 		#endregion
 
 		#region Constructors
 
-		public Client(TextWriter output, TextWriter error)
+		public Client(TextWriter info, TextWriter error, TextWriter output, TextWriter input)
 		{
-			this.output = output;
+			this.info = info;
 			this.error = error;
+			this.output = output;
+			this.input = input;
 			internalRoomId = -1;
 			id = -1;
 			coins = -1;
 			room = -1;
 		}
 
-		public Client(TextWriter output) : this(output, TextWriter.Null) { }
+		public Client(TextWriter info, TextWriter error) : this(info, error, TextWriter.Null, TextWriter.Null) { }
 
-		public Client() : this(TextWriter.Null, TextWriter.Null) { }
+		public Client(TextWriter info) : this(info, TextWriter.Null) { }
+
+		public Client() : this(TextWriter.Null) { }
 
 		#endregion
 
-		#region Methods
+		#region Private Methods
 
 		private static string SwappedMD5(string value)
 		{
@@ -121,7 +157,7 @@ namespace PenguinClient
 
 		private bool VersionCheck(int version)
 		{
-			output.WriteLine("Sending \"verChk\" request...");
+			info.WriteLine("Sending \"verChk\" request...");
 			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"verChk\" r=\"0\"><ver v=\"{0}\"/></body></msg>", version));
 			if (!sent)
 				return false;
@@ -129,17 +165,22 @@ namespace PenguinClient
 			if (response == null)
 				return false;
 			if (response.Contains("apiOK"))
+			{
+				info.WriteLine("Received \"apiOK\" response");
 				return true;
+			}
 			if (response.Contains("apiKO"))
+			{
+				info.WriteLine("Received \"apiKO\" response");
 				return false;
-			error.WriteLine("Invalid response");
+			}
+			error.WriteLine("Received invalid response");
 			return false;
 		}
 
 		private string ReceiveKey()
 		{
-			output.WriteLine("Sending \"rndK\" request...");
-			output.WriteLine();
+			info.WriteLine("Sending \"rndK\" request...");
 			bool sent = io.Send("<msg t=\"sys\"><body action=\"rndK\" r=\"-1\"></body></msg>");
 			if (!sent)
 				return null;
@@ -152,11 +193,11 @@ namespace PenguinClient
 				if (regex.IsMatch(response))
 				{
 					string key = regex.Match(response).Groups[2].Value;
-					output.WriteLine("Received key: {0}", key);
+					info.WriteLine("Received key: {0}", key);
 					return key;
 				}
 			}
-			error.WriteLine("Invalid response");
+			error.WriteLine("Received invalid response");
 			return null;
 		}
 
@@ -408,7 +449,7 @@ namespace PenguinClient
 
 		private string Login(string username, string password, int version)
 		{
-			output.WriteLine("Logging in...");
+			info.WriteLine("Logging in...");
 			bool ok = VersionCheck(version);
 			if (!ok)
 				return null;
@@ -428,13 +469,13 @@ namespace PenguinClient
 			} while (packet.Command != "l");
 			id = int.Parse(packet.Array[1]);
 			key = packet.Array[2];
-			output.WriteLine("Logged in.");
+			info.WriteLine("Logged in");
 			return key;
 		}
 
 		private bool JoinServer(string username, string loginKey, int version)
 		{
-			output.WriteLine("Joining server...");
+			info.WriteLine("Joining server...");
 			bool ok = VersionCheck(version);
 			if (!ok)
 				return false;
@@ -461,7 +502,7 @@ namespace PenguinClient
 				if (packet == null)
 					return false;
 			} while (packet.Command != "js");
-			output.WriteLine("Joined server.");
+			info.WriteLine("Joined server");
 			return true;
 		}
 
@@ -585,15 +626,14 @@ namespace PenguinClient
 				int id = int.Parse(packet.Array[1]);
 				int coins = int.Parse(packet.Array[2]);
 				int cost = this.coins - coins;
-				output.WriteLine("Added item {0} (cost {1} coins)", id, cost);
+				info.WriteLine("Added item {0} (cost {1} coins)", id, cost);
 			}, false);
-			output.WriteLine("Listening to packets...");
+			info.WriteLine("Listening to packets...");
 			while (Connected)
 			{
 				Packet packet = ReceivePacket();
 				if (packet != null)
 				{
-					output.WriteLine(packet);
 					if (Packet == null)
 						error.WriteLine("Unhadled packet");
 					else
@@ -602,26 +642,30 @@ namespace PenguinClient
 			}
 		}
 
+		#endregion
+
+		#region Public Methods
+
 		public bool Connect(IPAddress ip, int loginPort, int gamePort, string username, string password, int version)
 		{
-			output.WriteLine("Connecting to {0}:{1}...", ip, loginPort);
-			io = new IO(ip, loginPort);
+			info.WriteLine("Connecting to {0}:{1}...", ip, loginPort);
+			io = new IO(ip, loginPort, output, input);
 
 			string key = Login(username, password, version);
 			if (key == null)
 			{
-				error.WriteLine("Failed to log in.");
+				error.WriteLine("Failed to log in");
 				return false;
 			}
 
-			output.WriteLine("Connecting to {0}:{1}...", ip, gamePort);
+			info.WriteLine("Connecting to {0}:{1}...", ip, gamePort);
 			io.Dispose();
-			io = new IO(ip, gamePort);
+			io = new IO(ip, gamePort, output, input);
 
 			bool joined = JoinServer(username, key, version);
 			if (!joined)
 			{
-				error.WriteLine("Failed to join server.");
+				error.WriteLine("Failed to join server");
 				return false;
 			}
 
@@ -665,7 +709,7 @@ namespace PenguinClient
 			OnPacket(command, action, true);
 		}
 
-		public Packet WaitForPacket(string command)
+		public Packet OnPacket(string command)
 		{
 			Packet packet = null;
 			AutoResetEvent handle = new AutoResetEvent(false);
@@ -682,7 +726,7 @@ namespace PenguinClient
 
 		public void JoinRoom(int id, int x, int y)
 		{
-			output.WriteLine("Joining room {0}...", id);
+			info.WriteLine("Joining room {0}...", id);
 			SendPacket("s", "j#jr", internalRoomId, id, x, y);
 		}
 
@@ -693,7 +737,7 @@ namespace PenguinClient
 
 		public void JoinIgloo(int id)
 		{
-			output.WriteLine("Joining {0}'s igloo...", id);
+			info.WriteLine("Joining {0}'s igloo...", id);
 			SendPacket("s", "j#jp", this.id, id + 1000);
 		}
 
@@ -704,61 +748,61 @@ namespace PenguinClient
 
 		public void UpdateColor(int id)
 		{
-			output.WriteLine("Changing color to {0}...", id);
+			info.WriteLine("Changing color to {0}...", id);
 			SendPacket("s", "s#upc", internalRoomId, id);
 		}
 
 		public void UpdateHead(int id)
 		{
-			output.WriteLine("Changing head item to {0}...", id);
+			info.WriteLine("Changing head item to {0}...", id);
 			SendPacket("s", "s#uph", internalRoomId, id);
 		}
 
 		public void UpdateFace(int id)
 		{
-			output.WriteLine("Changing face item to {0}...", id);
+			info.WriteLine("Changing face item to {0}...", id);
 			SendPacket("s", "s#upf", internalRoomId, id);
 		}
 
 		public void UpdateNeck(int id)
 		{
-			output.WriteLine("Changing neck item to {0}...", id);
+			info.WriteLine("Changing neck item to {0}...", id);
 			SendPacket("s", "s#upn", internalRoomId, id);
 		}
 
 		public void UpdateBody(int id)
 		{
-			output.WriteLine("Changing body item to {0}...", id);
+			info.WriteLine("Changing body item to {0}...", id);
 			SendPacket("s", "s#upb", internalRoomId, id);
 		}
 
 		public void UpdateHand(int id)
 		{
-			output.WriteLine("Changing hand item to {0}...", id);
+			info.WriteLine("Changing hand item to {0}...", id);
 			SendPacket("s", "s#upa", internalRoomId, id);
 		}
 
 		public void UpdateFeet(int id)
 		{
-			output.WriteLine("Changing feet item to {0}...", id);
+			info.WriteLine("Changing feet item to {0}...", id);
 			SendPacket("s", "s#upe", internalRoomId, id);
 		}
 
 		public void UpdatePin(int id)
 		{
-			output.WriteLine("Changing pin to {0}...", id);
+			info.WriteLine("Changing pin to {0}...", id);
 			SendPacket("s", "s#upl", internalRoomId, id);
 		}
 
 		public void UpdateBackground(int id)
 		{
-			output.WriteLine("Changing background to {0}...", id);
+			info.WriteLine("Changing background to {0}...", id);
 			SendPacket("s", "s#upp", internalRoomId, id);
 		}
 
 		public void Walk(int x, int y)
 		{
-			output.WriteLine("Walking to ({0}, {1})...", x, y);
+			info.WriteLine("Walking to ({0}, {1})...", x, y);
 			SendPacket("s", "u#sp", id, x, y);
 		}
 
@@ -774,19 +818,19 @@ namespace PenguinClient
 
 		public void Dance()
 		{
-			output.WriteLine("Dancing...");
+			info.WriteLine("Dancing...");
 			Frame(26);
 		}
 
 		public void Wave()
 		{
-			output.WriteLine("Waving...");
+			info.WriteLine("Waving...");
 			Action(25);
 		}
 
 		public void Sit(SitDirection direction)
 		{
-			output.WriteLine("Sitting...");
+			info.WriteLine("Sitting...");
 			Frame((int)direction);
 		}
 
@@ -797,43 +841,43 @@ namespace PenguinClient
 
 		public void Snowball(int x, int y)
 		{
-			output.WriteLine("Throwing snowball to ({0}, {1})...", x, y);
+			info.WriteLine("Throwing snowball to ({0}, {1})...", x, y);
 			SendPacket("s", "u#sb", internalRoomId, x, y);
 		}
 
 		public void Say(string message)
 		{
-			output.WriteLine("Saying '{0}'...", message);
+			info.WriteLine("Saying '{0}'...", message);
 			SendPacket("s", "m#sm", internalRoomId, id, message);
 		}
 
 		public void SaySafe(int id)
 		{
-			output.WriteLine("Saying {0}...", id);
+			info.WriteLine("Saying {0}...", id);
 			SendPacket("s", "u#ss", internalRoomId, id);
 		}
 
 		public void Joke(int id)
 		{
-			output.WriteLine("Saying joke {0}...", id);
+			info.WriteLine("Saying joke {0}...", id);
 			SendPacket("s", "u#sj", this.id, id);
 		}
 
 		public void Emote(int id)
 		{
-			output.WriteLine("Saying emote {0}...", id);
+			info.WriteLine("Saying emote {0}...", id);
 			SendPacket("s", "u#se", internalRoomId, id);
 		}
 
 		public void AddItem(int id)
 		{
-			output.WriteLine("Adding item {0}...", id);
+			info.WriteLine("Adding item {0}...", id);
 			SendPacket("s", "i#ai", internalRoomId, id);
 		}
 
 		public void AddCoins(int coins)
 		{
-			output.WriteLine("Adding {0} coins", coins);
+			info.WriteLine("Adding {0} coins", coins);
 			int room = this.room;
 			JoinRoom(912);
 			SendPacket("z", "zo", coins);
@@ -842,7 +886,7 @@ namespace PenguinClient
 
 		public void Logout()
 		{
-			output.WriteLine("Logging out...");
+			info.WriteLine("Logging out...");
 			Dispose();
 		}
 
