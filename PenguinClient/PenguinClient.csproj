@@ -41,12 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Packet.cs" />
-    <Compile Include="Client.cs" />
+    <Compile Include="Bot.cs" />
     <Compile Include="IO.cs" />
     <Compile Include="PacketEventArgs.cs" />
     <Compile Include="Penguin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SitDirection.cs" />
+    <Compile Include="Client.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

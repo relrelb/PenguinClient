@@ -5,14 +5,14 @@ namespace PenguinClientFlash
 {
 	public partial class Form1 : Form
 	{
-		private Loader loader;
+		private FlashClient client;
 
 		public Form1()
 		{
 			InitializeComponent();
-			loader = new Loader(axShockwaveFlash, Application.StartupPath + @"\loader.swf");
-			loader.InvokeRequest += Loader_InvokeRequest;
-			loader.Load();
+			client = new FlashClient(axShockwaveFlash, Application.StartupPath + @"\loader.swf");
+			client.InvokeRequest += Loader_InvokeRequest;
+			client.Load();
 		}
 
 		private void Loader_InvokeRequest(object sender, InvokeRequestEventArgs e)
@@ -25,7 +25,7 @@ namespace PenguinClientFlash
 					{
 						if (i > 0)
 							message += " ";
-						message += Loader.GetLiteral(e.Arguments[i]);
+						message += FlashClient.GetLiteral(e.Arguments[i]);
 					}
 					MessageBox.Show(message);
 					break;
@@ -34,23 +34,7 @@ namespace PenguinClientFlash
 
 		private void button_Click(object sender, EventArgs e)
 		{
-			loader.Init();
-			Waddle(428310, 400, 400);
-		}
-
-		private void Waddle(int id, int x, int y)
-		{
-			loader.SendPacket("s", "u#sp", new object[] { id, x, y });
-		}
-
-		protected override void OnClosed(EventArgs e)
-		{
-			base.OnClosed(e);
-			if (loader != null)
-			{
-				loader.Dispose();
-				loader = null;
-			}
+			client.Walk(400, 400);
 		}
 	}
 }

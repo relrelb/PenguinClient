@@ -51,7 +51,7 @@ namespace PenguinClientFlash
 				List<object> args = new List<object>();
 				while (reader.Name != "arguments" || reader.NodeType != XmlNodeType.EndElement)
 				{
-					object arg = Loader.ReadXmlValue(reader);
+					object arg = FlashClient.ReadXmlValue(reader);
 					args.Add(arg);
 				}
 				reader.ReadEndElement();

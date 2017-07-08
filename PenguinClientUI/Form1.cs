@@ -8,7 +8,7 @@ namespace PenguinClientUI
 {
 	public partial class Form1 : Form
 	{
-		private Client client;
+		private Bot client;
 
 		public Form1()
 		{
@@ -20,7 +20,7 @@ namespace PenguinClientUI
 			output.ForeColor = Color.Green;
 			LogWriter input = new LogWriter(log);
 			input.ForeColor = Color.Blue;
-			client = new Client(info, error, output, input);
+			client = new Bot(info, error, output, input);
 			Thread thread = new Thread(() =>
 			{
 				bool connected = client.Connect("158.69.214.194", 6112, 6115, "nagitest", "test");

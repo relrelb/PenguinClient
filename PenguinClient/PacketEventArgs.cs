@@ -8,7 +8,7 @@ namespace PenguinClient
 
 		public Packet Packet { get { return packet; } }
 
-		internal PacketEventArgs(Packet packet)
+		public PacketEventArgs(Packet packet)
 		{
 			this.packet = packet;
 		}

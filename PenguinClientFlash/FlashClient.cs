@@ -8,15 +8,13 @@ using System.Xml;
 
 namespace PenguinClientFlash
 {
-	public class Loader : IDisposable
+	public class FlashClient : Client
 	{
 		#region Fields
 
 		private AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash;
 
 		private string url;
-
-		private PacketQueue packets;
 
 		#endregion
 
@@ -32,47 +30,28 @@ namespace PenguinClientFlash
 
 		public string Url { get { return url; } }
 
+		public override bool Connected { get { return true; } }
+
 		#endregion
 
 		#region Constructors
 
-		public Loader(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url)
+		public FlashClient(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url, TextWriter info, TextWriter error, TextWriter output, TextWriter input) : base(info, error, output, input)
 		{
 			this.axShockwaveFlash = axShockwaveFlash;
 			this.url = url;
-			packets = new PacketQueue();
 			axShockwaveFlash.FlashCall += AxShockwaveFlash_FlashCall;
 		}
+
+		public FlashClient(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url, TextWriter info, TextWriter error) : this(axShockwaveFlash, url, info, error, TextWriter.Null, TextWriter.Null) { }
+
+		public FlashClient(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url, TextWriter info) : this(axShockwaveFlash, url, info, TextWriter.Null) { }
+
+		public FlashClient(AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash, string url) : this(axShockwaveFlash, url, TextWriter.Null) { }
 
 		#endregion
 
 		#region Methods
-
-		public void Load()
-		{
-			axShockwaveFlash.LoadMovie(0, url);
-			axShockwaveFlash.Play();
-		}
-
-		public void Init()
-		{
-			CallFunction("init");
-		}
-
-		public void SendPacket(Packet packet)
-		{
-			CallFunction("sendPacket", packet.Extension, packet.Command, packet.Array, "str");
-		}
-
-		public void SendPacket(string extension, string command, object[] array)
-		{
-			SendPacket(new Packet(extension, command, array));
-		}
-
-		public Packet ReceivePacket()
-		{
-			return packets.Dequeue();
-		}
 
 		public static string GetLiteral(object obj)
 		{
@@ -115,6 +94,24 @@ namespace PenguinClientFlash
 			return obj.ToString();
 		}
 
+		public void Load()
+		{
+			axShockwaveFlash.LoadMovie(0, url);
+			axShockwaveFlash.Play();
+		}
+
+		protected override bool SendPacket(Packet packet)
+		{
+			CallFunction("sendPacket", packet.Extension, packet.Command, packet.Array, "str");
+			return true;
+		}
+
+		protected override Packet ReceivePacket()
+		{
+			//TODO pop
+			return null;
+		}
+
 		private object CallFunction(string name, params object[] args)
 		{
 			StringBuilder builder = new StringBuilder();
@@ -151,7 +148,8 @@ namespace PenguinClientFlash
 					string extension = (string)request.Arguments[0];
 					string command = (string)request.Arguments[1];
 					object[] array = (object[])request.Arguments[2];
-					packets.Enqueue(extension, command, array);
+					Packet packet = new Packet(extension, command, array);
+					//TODO push
 					break;
 				default:
 					if (InvokeRequest != null)
@@ -256,15 +254,6 @@ namespace PenguinClientFlash
 					return obj;
 			}
 			throw new InvalidDataException("Invalid XML data");
-		}
-
-		public void Dispose()
-		{
-			if (packets != null)
-			{
-				packets.Dispose();
-				packets = null;
-			}
 		}
 
 		private class Undefined

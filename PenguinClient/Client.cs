@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace PenguinClient
 {
-	public class Client : IDisposable
+	public abstract class Client : IDisposable
 	{
 		#region Fields
 
-		private IO io;
+		private TextWriter info;
+
+		private TextWriter error;
+
+		private TextWriter output;
+
+		private TextWriter input;
 
 		private int internalRoomId;
 
@@ -27,14 +29,6 @@ namespace PenguinClient
 
 		private Dictionary<int, Penguin> penguins;
 
-		private TextWriter info;
-
-		private TextWriter error;
-
-		private TextWriter output;
-
-		private TextWriter input;
-
 		#endregion
 
 		#region Events
@@ -44,24 +38,6 @@ namespace PenguinClient
 		#endregion
 
 		#region Properties
-
-		public int InternalRoomId { get { return internalRoomId; } }
-
-		public int PenguinId { get { return id; } }
-
-		public int Coins { get { return coins; } }
-
-		public int RoomId { get { return room; } }
-
-		public bool Connected
-		{
-			get
-			{
-				if (io == null)
-					return false;
-				return io.Connected;
-			}
-		}
 
 		public TextWriter Info
 		{
@@ -96,8 +72,6 @@ namespace PenguinClient
 			set
 			{
 				output = value;
-				if (io != null)
-					io.Output = value;
 			}
 		}
 
@@ -110,16 +84,64 @@ namespace PenguinClient
 			set
 			{
 				input = value;
-				if (io != null)
-					io.Input = value;
 			}
 		}
+
+		public int InternalRoomId
+		{
+			get
+			{
+				return internalRoomId;
+			}
+			protected set
+			{
+				internalRoomId = value;
+			}
+		}
+
+		public int PenguinId
+		{
+			get
+			{
+				return id;
+			}
+			protected set
+			{
+				id = value;
+			}
+		}
+
+		public int Coins
+		{
+			get
+			{
+				return coins;
+			}
+			protected set
+			{
+				coins = value;
+			}
+		}
+
+		public int RoomId
+		{
+			get
+			{
+				return room;
+			}
+			protected set
+			{
+				room = value;
+			}
+		}
+
+		public abstract bool Connected { get; }
 
 		#endregion
 
 		#region Constructors
 
-		public Client(TextWriter info, TextWriter error, TextWriter output, TextWriter input)
+		protected Client(TextWriter info, TextWriter error, TextWriter output, TextWriter input)
 		{
 			this.info = info;
 			this.error = error;
@@ -131,112 +153,28 @@ namespace PenguinClient
 			room = -1;
 		}
 
-		public Client(TextWriter info, TextWriter error) : this(info, error, TextWriter.Null, TextWriter.Null) { }
-
-		public Client(TextWriter info) : this(info, TextWriter.Null) { }
-
-		public Client() : this(TextWriter.Null) { }
-
 		#endregion
 
-		#region Private Methods
+		#region Methods
 
-		private static string SwappedMD5(string value)
-		{
-			string hash = string.Empty;
-			using (MD5 md5 = MD5.Create())
-			{
-				byte[] bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(value));
-				foreach (byte b in bytes)
-				{
-					hash += b.ToString("x2");
-				}
-			}
-			return hash.Substring(16, 16) + hash.Substring(0, 16);
-		}
+		protected abstract bool SendPacket(Packet packet);
 
-		private bool VersionCheck(int version)
-		{
-			info.WriteLine("Sending \"verChk\" request...");
-			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"verChk\" r=\"0\"><ver v=\"{0}\"/></body></msg>", version));
-			if (!sent)
-				return false;
-			string response = io.Receive();
-			if (response == null)
-				return false;
-			if (response.Contains("apiOK"))
-			{
-				info.WriteLine("Received \"apiOK\" response");
-				return true;
-			}
-			if (response.Contains("apiKO"))
-			{
-				info.WriteLine("Received \"apiKO\" response");
-				return false;
-			}
-			error.WriteLine("Received invalid response");
-			return false;
-		}
-
-		private string ReceiveKey()
-		{
-			info.WriteLine("Sending \"rndK\" request...");
-			bool sent = io.Send("<msg t=\"sys\"><body action=\"rndK\" r=\"-1\"></body></msg>");
-			if (!sent)
-				return null;
-			string response = io.Receive();
-			if (response == null)
-				return null;
-			if (response.Contains("rndK"))
-			{
-				Regex regex = new Regex(@"<k>(<!\[CDATA\[)?(.*?)(\]\]>)?<\/k>");
-				if (regex.IsMatch(response))
-				{
-					string key = regex.Match(response).Groups[2].Value;
-					info.WriteLine("Received key: {0}", key);
-					return key;
-				}
-			}
-			error.WriteLine("Received invalid response");
-			return null;
-		}
-
-		private bool SendPacket(Packet packet)
-		{
-			return io.Send(packet.ToString());
-		}
-
-		private bool SendPacket(string extension, string command, params object[] array)
+		protected bool SendPacket(string extension, string command, params object[] array)
 		{
 			return SendPacket(new Packet(extension, command, array));
 		}
 
-		private Packet ReceivePacket(bool error)
+		protected abstract Packet ReceivePacket();
+
+		protected Packet ReceivePacket(bool error)
 		{
-			string data = io.Receive();
-			if (data == null)
-				return null;
-			Packet packet;
-			try
-			{
-				packet = PenguinClient.Packet.Parse(data, false);
-			}
-			catch (Exception e)
-			{
-				this.error.WriteLine("Error: {0}", e.Message);
-				return null;
-			}
+			Packet packet = ReceivePacket();
 			if (error && packet.Command == "e")
 			{
 				HandleError(packet);
 				return null;
 			}
 			return packet;
-		}
-
-		private Packet ReceivePacket()
-		{
-			return ReceivePacket(true);
 		}
 
 		private void HandleError(Packet packet)
@@ -447,66 +385,7 @@ namespace PenguinClient
 			return null;
 		}
 
-		private string Login(string username, string password, int version)
-		{
-			info.WriteLine("Logging in...");
-			bool ok = VersionCheck(version);
-			if (!ok)
-				return null;
-			string key = ReceiveKey();
-			if (key == null)
-				return null;
-			string hash = SwappedMD5(SwappedMD5(password).ToUpper() + key + "Y(02.>'H}t\":E1");
-			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"login\" r=\"0\"><login z=\"w1\"><nick><![CDATA[{0}]]></nick><pword><![CDATA[{1}]]></pword></login></body></msg>", username, hash));
-			if (!sent)
-				return null;
-			Packet packet;
-			do
-			{
-				packet = ReceivePacket();
-				if (packet == null)
-					return null;
-			} while (packet.Command != "l");
-			id = int.Parse(packet.Array[1]);
-			key = packet.Array[2];
-			info.WriteLine("Logged in");
-			return key;
-		}
-
-		private bool JoinServer(string username, string loginKey, int version)
-		{
-			info.WriteLine("Joining server...");
-			bool ok = VersionCheck(version);
-			if (!ok)
-				return false;
-			string key = ReceiveKey();
-			if (key == null)
-				return false;
-			string hash = SwappedMD5(loginKey + key) + loginKey;
-			bool sent = io.Send(string.Format("<msg t=\"sys\"><body action=\"login\" r=\"0\"><login z=\"w1\"><nick><![CDATA[{0}]]></nick><pword><![CDATA[{1}]]></pword></login></body></msg>", username, hash));
-			if (!sent)
-				return false;
-			Packet packet;
-			do
-			{
-				packet = ReceivePacket();
-				if (packet == null)
-					return false;
-			} while (packet.Command != "l");
-			sent = SendPacket("s", "j#js", internalRoomId, id, loginKey, "en");
-			if (!sent)
-				return false;
-			do
-			{
-				packet = ReceivePacket();
-				if (packet == null)
-					return false;
-			} while (packet.Command != "js");
-			info.WriteLine("Joined server");
-			return true;
-		}
-
-		private void Listen()
+		protected void Listen()
 		{
 			heartbeat = new Timer(state =>
 			{
@@ -516,7 +395,7 @@ namespace PenguinClient
 			OnPacket("lp", packet =>
 			{
 				Penguin penguin = Penguin.FromPlayer(packet.Array[1]);
-				coins = int.Parse(packet.Array[2]);
+				Coins = int.Parse(packet.Array[2]);
 				bool safe = packet.Array[3] == "1";
 				//int eggTimer = int.Parse(packet.Array[4]);
 				long loginTime = long.Parse(packet.Array[5]);
@@ -632,7 +511,7 @@ namespace PenguinClient
 			info.WriteLine("Listening to packets...");
 			while (Connected)
 			{
-				Packet packet = ReceivePacket();
+				Packet packet = ReceivePacket(true);
 				if (packet != null)
 				{
 					if (Packet == null)
@@ -641,53 +520,6 @@ namespace PenguinClient
 						Packet(this, new PacketEventArgs(packet));
 				}
 			}
-		}
-
-		#endregion
-
-		#region Public Methods
-
-		public bool Connect(IPAddress ip, int loginPort, int gamePort, string username, string password, int version)
-		{
-			info.WriteLine("Connecting to {0}:{1}...", ip, loginPort);
-			io = new IO(ip, loginPort, output, input);
-
-			string key = Login(username, password, version);
-			if (key == null)
-			{
-				error.WriteLine("Failed to log in");
-				return false;
-			}
-
-			info.WriteLine("Connecting to {0}:{1}...", ip, gamePort);
-			io.Dispose();
-			io = new IO(ip, gamePort, output, input);
-
-			bool joined = JoinServer(username, key, version);
-			if (!joined)
-			{
-				error.WriteLine("Failed to join server");
-				return false;
-			}
-
-			Thread thread = new Thread(Listen);
-			thread.Start();
-			return true;
-		}
-
-		public bool Connect(IPAddress ip, int loginPort, int gamePort, string username, string password)
-		{
-			return Connect(ip, loginPort, gamePort, username, password, 153);
-		}
-
-		public bool Connect(string ip, int loginPort, int gamePort, string username, string password, int version)
-		{
-			return Connect(IPAddress.Parse(ip), loginPort, gamePort, username, password, version);
-		}
-
-		public bool Connect(string ip, int loginPort, int gamePort, string username, string password)
-		{
-			return Connect(IPAddress.Parse(ip), loginPort, gamePort, username, password);
 		}
 
 		public void OnPacket(string command, Action<Packet> action, bool once)
@@ -891,17 +723,12 @@ namespace PenguinClient
 			Dispose();
 		}
 
-		public void Dispose()
+		public virtual void Dispose()
 		{
 			if (heartbeat != null)
 			{
 				heartbeat.Dispose();
 				heartbeat = null;
-			}
-			if (io != null)
-			{
-				io.Dispose();
-				io = null;
 			}
 		}
 
