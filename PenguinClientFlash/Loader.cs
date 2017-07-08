@@ -3,19 +3,19 @@ using System.Windows.Forms;
 
 namespace PenguinClientFlash
 {
-	public partial class Form1 : Form
+	public partial class Loader : Form
 	{
 		private FlashClient client;
 
-		public Form1()
+		public Loader()
 		{
 			InitializeComponent();
 			client = new FlashClient(axShockwaveFlash, Application.StartupPath + @"\loader.swf");
-			client.InvokeRequest += Loader_InvokeRequest;
+			client.InvokeRequest += Client_InvokeRequest;
 			client.Load();
 		}
 
-		private void Loader_InvokeRequest(object sender, InvokeRequestEventArgs e)
+		private void Client_InvokeRequest(object sender, InvokeRequestEventArgs e)
 		{
 			switch (e.Name)
 			{

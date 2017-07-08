@@ -1,6 +1,6 @@
 ﻿namespace PenguinClientFlash
 {
-	partial class Form1
+	partial class Loader
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Loader));
 			this.axShockwaveFlash = new AxShockwaveFlashObjects.AxShockwaveFlash();
 			this.button = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.axShockwaveFlash)).BeginInit();
