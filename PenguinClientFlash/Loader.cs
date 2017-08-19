@@ -12,6 +12,11 @@ namespace PenguinClientFlash
 			InitializeComponent();
 			client = new FlashClient(axShockwaveFlash, Application.StartupPath + @"\loader.swf");
 			client.InvokeRequest += Client_InvokeRequest;
+		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
 			client.Load();
 		}
 
@@ -35,6 +40,16 @@ namespace PenguinClientFlash
 		private void button_Click(object sender, EventArgs e)
 		{
 			client.Walk(400, 400);
+		}
+
+		protected override void OnClosed(EventArgs e)
+		{
+			base.OnClosed(e);
+			if (client != null)
+			{
+				client.Dispose();
+				client = null;
+			}
 		}
 	}
 }

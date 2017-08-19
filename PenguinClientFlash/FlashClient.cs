@@ -4,17 +4,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Xml;
 
 namespace PenguinClientFlash
 {
-	public class FlashClient : Client
+	public class FlashClient : Client, IDisposable
 	{
 		#region Fields
 
 		private AxShockwaveFlashObjects.AxShockwaveFlash axShockwaveFlash;
 
 		private string url;
+
+		private Packet packet;
+
+		private AutoResetEvent handle;
 
 		#endregion
 
@@ -40,6 +45,7 @@ namespace PenguinClientFlash
 		{
 			this.axShockwaveFlash = axShockwaveFlash;
 			this.url = url;
+			handle = new AutoResetEvent(false);
 			axShockwaveFlash.FlashCall += AxShockwaveFlash_FlashCall;
 		}
 
@@ -108,8 +114,8 @@ namespace PenguinClientFlash
 
 		protected override Packet ReceivePacket()
 		{
-			//TODO pop
-			return null;
+			handle.WaitOne();
+			return packet;
 		}
 
 		private object CallFunction(string name, params object[] args)
@@ -148,8 +154,8 @@ namespace PenguinClientFlash
 					string extension = (string)request.Arguments[0];
 					string command = (string)request.Arguments[1];
 					object[] array = (object[])request.Arguments[2];
-					Packet packet = new Packet(extension, command, array);
-					//TODO push
+					packet = new Packet(extension, command, array);
+					handle.Set();
 					break;
 				default:
 					if (InvokeRequest != null)
@@ -261,6 +267,16 @@ namespace PenguinClientFlash
 			public static readonly Undefined Value = new Undefined();
 
 			private Undefined() { }
+		}
+
+		public override void Dispose()
+		{
+			base.Dispose();
+			if (handle != null)
+			{
+				handle.Dispose();
+				handle = null;
+			}
 		}
 
 		#endregion
