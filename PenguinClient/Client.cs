@@ -391,7 +391,7 @@ namespace PenguinClient
 			{
 				SendPacket("s", "u#h", internalRoomId);
 			}, null, 600000, 600000);
-			OnPacket("h", packet => { });
+			OnPacket("h", packet => { }, false);
 			OnPacket("lp", packet =>
 			{
 				Penguin penguin = Penguin.FromPlayer(packet.Array[1]);
@@ -514,10 +514,10 @@ namespace PenguinClient
 				Packet packet = ReceivePacket(true);
 				if (packet != null)
 				{
-					if (Packet == null)
-						error.WriteLine("Unhadled packet");
-					else
-						Packet(this, new PacketEventArgs(packet));
+					PacketEventArgs e = new PacketEventArgs(packet);
+					Packet(this, e);
+					if (!e.Handled)
+						error.WriteLine("Unhadled packet: {0}", packet);
 				}
 			}
 		}
@@ -530,6 +530,7 @@ namespace PenguinClient
 				if (e.Packet.Command == command)
 				{
 					action(e.Packet);
+					e.Handled = true;
 					if (once)
 						Packet -= handler;
 				}
